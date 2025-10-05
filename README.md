@@ -61,6 +61,9 @@ graphs.png → Data visualizations for campaign impact.
 stats.png → Stats dashboard for growth & outcomes.
 
 customer-section.mp4 → Background for Testimonials section.
+home.mp4
+testimonial.mp4
+customer
 
 🛠 Tech Stack
 
@@ -72,15 +75,6 @@ LocalStorage/sessionStorage for state handling (preloader, newsletter modal).
 
 Custom SVG/Canvas + provided assets for charts and stats.
 
-🚀 How to Run Locally
-
-Clone this repository or download the files.
-
-Open index.html in any modern browser.
-
-Assets are inside /assets. Replace with your own if needed.
-
-Content (influencers, works, stats) can be edited inline in the HTML/JS sections.
 
 📥 Future Enhancements
 
