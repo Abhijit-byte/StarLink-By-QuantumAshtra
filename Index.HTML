@@ -1,0 +1,2457 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarLink Studio | Connecting Celebrities, Brands & Organizers with Trust</title>
+    <!-- Load Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* ========================================================================= */
+        /* --- SIMULATED /css/base.css, /css/layout.css, and /css/components.css --- */
+        /* ========================================================================= */
+
+        :root {
+            --color-dark-bg: #0f0b18; /* Dark Purple/Indigo Background */
+            --color-primary-accent: #6366f1; /* Indigo-500 */
+            --color-secondary-accent: #f59e0b; /* Amber-500 */
+            --color-positive: #10b981; /* Emerald-500 */
+            --color-negative: #f43f5e; /* Rose-500 */
+        }
+
+        body {
+            background-color: var(--color-dark-bg);
+            color: #e5e7eb; /* Gray-200 */
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        /* --- Layout & Utility --- */
+        .container {
+            max-width: 1280px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        /* --- Components: Glass Card --- */
+        .glass-card {
+            border-radius: 1.5rem; /* rounded-3xl */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* border-white/10 */
+            background-color: rgba(255, 255, 255, 0.03); /* subtle transparency */
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+        }
+        .glass-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* --- Components: Ripple Button --- */
+        .ripple-button {
+            position: relative;
+            overflow: hidden;
+            transform: translate3d(0, 0, 0);
+        }
+        .ripple-button::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transition: all 0.5s ease-out;
+        }
+        .ripple-button:focus::after, .ripple-button:active::after {
+            transform: scale(300, 300) translate(-50%);
+            opacity: 1;
+            transition: all 1s ease-out;
+        }
+
+        /* --- Accessibility --- */
+        *:focus-visible {
+            outline: 2px solid var(--color-secondary-accent);
+            outline-offset: 3px;
+            border-radius: 4px;
+        }
+
+        /* --- Carousel Specific (for basic horizontal scrolling) --- */
+        .carousel-track {
+            display: flex;
+            transition: transform 0.4s ease-in-out;
+            scroll-snap-type: x mandatory;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .carousel-item {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+        }
+
+        /* --- Works Card Animation (Fade-in on load) --- */
+        .work-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .work-card.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* --- Compare Tray Transition --- */
+        #compare-tray.hidden {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        #compare-tray {
+            transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+        }
+        /* Ensure it always uses flex when visible, even if the JS hides/shows */
+        #compare-tray.flex {
+            display: flex;
+        }
+
+        /* --- Shortlist Drawer Transition --- */
+        #shortlist-drawer {
+            transition: transform 0.4s ease-out;
+        }
+        #shortlist-drawer.hidden {
+            transform: translateX(100%);
+        }
+
+        /* --- Lightbox Zoom (simulated) --- */
+        #lightbox-modal {
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #lightbox-modal.flex {
+            opacity: 1;
+            pointer-events: auto;
+            display: flex;
+        }
+        #lightbox-modal-content {
+            transition: transform 0.3s ease-in-out;
+            transform: scale(0.95);
+        }
+        #lightbox-modal.flex #lightbox-modal-content {
+            transform: scale(1);
+        }
+        /* Progress bar styling */
+        .progress-bar-fill {
+            transition: width 0.6s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- 0. Preloader -->
+    <div id="preloader" class="fixed inset-0 z-[110] bg-black flex flex-col items-center justify-center transition-opacity duration-500 ease-out">
+        <h1 class="text-5xl font-extrabold text-white mb-8">StarLink<span class="text-amber-400">.</span> Studio</h1>
+        <div class="w-64 bg-indigo-900 rounded-full h-2.5 overflow-hidden shadow-lg">
+            <div id="progress-bar" class="h-2.5 bg-amber-500 transition-all duration-300 ease-linear" style="width: 0%"></div>
+        </div>
+        <p id="progress-text" class="text-amber-400 mt-3 text-sm font-semibold">0%</p>
+    </div>
+
+    <!-- Skip-to-content link -->
+    <a href="#main-content" class="sr-only focus:not-sr-only fixed top-4 left-4 z-[200] p-3 bg-white text-black font-semibold rounded-lg">
+        Skip to main content
+    </a>
+
+    <!-- 1. Header -->
+    <header id="main-header" class="sticky top-0 z-50 bg-[var(--color-dark-bg)]/90 backdrop-blur-lg shadow-xl border-b border-indigo-900/50">
+        <div class="container h-16 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="#hero" class="flex-shrink-0 text-3xl font-bold text-white tracking-widest">
+                StarLink<span class="text-amber-400">.</span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-6" aria-label="Main Navigation">
+                <div id="desktop-nav-links" class="flex space-x-6 text-sm font-medium">
+                    <!-- Links injected by JS -->
+                </div>
+                <button onclick="openBookingModal()" class="ripple-button bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2 rounded-full shadow-lg ml-4">
+                    Start Campaign
+                </button>
+            </nav>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg hover:bg-white/10 transition" aria-expanded="false" aria-controls="mobile-menu" aria-label="Toggle main menu">
+                <svg id="menu-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-white"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+                <svg id="close-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-amber-400 hidden"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <nav id="mobile-menu" class="md:hidden bg-indigo-900/95 shadow-2xl pb-4 border-t border-white/5 hidden" aria-label="Mobile Navigation">
+            <div id="mobile-nav-links" class="px-4 pt-2 pb-3 space-y-2 flex flex-col">
+                <!-- Links and CTA injected by JS -->
+            </div>
+        </nav>
+    </header>
+
+    <main id="main-content">
+        <!-- 2. Hero Section -->
+        <section id="hero" class="relative py-28 sm:py-40 overflow-hidden text-center bg-cover bg-center" style="background-image: linear-gradient(rgba(15, 11, 24, 0.9), rgba(15, 11, 24, 0.9)), url('https://placehold.co/1920x600/1e0a3b/fff?text=Celebrity+Brand+Partnership');">
+            <div class="container relative z-10">
+                <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight mb-4 leading-tight">
+                    <span class="text-amber-400">Connecting Celebrities,</span> Brands & Organizers with <span class="text-indigo-400">Trust.</span>
+                </h1>
+                <p class="text-xl text-gray-400 mb-10 max-w-3xl mx-auto">
+                    Discover authentic partnerships & seamless bookings.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                    <button onclick="scrollToId('talent')" class="ripple-button bg-amber-500 hover:bg-amber-600 text-black font-semibold px-8 py-3 rounded-full shadow-lg shadow-amber-500/40">
+                        Explore Talent
+                    </button>
+                    <button onclick="openBookingModal()" class="ripple-button bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-8 py-3 rounded-full border border-indigo-700">
+                        Start Campaign
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Talent Directory -->
+        <section id="talent" class="py-20 sm:py-28">
+            <div class="container">
+                <h2 class="text-4xl font-extrabold text-center mb-4">Discover Your Next Star</h2>
+                <p class="text-xl text-gray-400 text-center max-w-2xl mx-auto mb-12">Filter through verified profiles to find the perfect match for your campaign or event.</p>
+                
+                <!-- Filters -->
+                <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4 mb-12">
+                    <select id="filter-industry" class="glass-card bg-white/5 p-3 appearance-none cursor-pointer">
+                        <option value="">Filter by Industry</option>
+                        <option value="fashion">Fashion</option>
+                        <option value="tech">Tech</option>
+                        <option value="sports">Sports</option>
+                        <option value="lifestyle">Lifestyle</option>
+                    </select>
+                    <select id="filter-budget" class="glass-card bg-white/5 p-3 appearance-none cursor-pointer">
+                        <option value="">Filter by Budget</option>
+                        <option value="5k-10k">$5k - $10k</option>
+                        <option value="10k-50k">$10k - $50k</option>
+                        <option value="50k+">$50k+</option>
+                    </select>
+                </div>
+
+                <!-- Talent Cards -->
+                <div id="talent-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Cards injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Campaign Showcase (Carousel) -->
+        <section id="campaigns" class="py-20 sm:py-28 bg-indigo-900/10">
+            <div class="container">
+                <h2 class="text-4xl font-extrabold text-center mb-4">Campaign Showcase</h2>
+                <p class="text-xl text-gray-400 text-center max-w-2xl mx-auto mb-12">Success stories built on mutual trust and high-impact performance.</p>
+                
+                <div class="relative max-w-4xl mx-auto">
+                    <div id="campaign-carousel" class="carousel-track glass-card p-4 sm:p-8 rounded-3xl h-[450px]">
+                        <!-- Carousel Items injected by JS -->
+                    </div>
+                    <!-- Navigation Buttons -->
+                    <button id="carousel-prev" class="absolute top-1/2 left-0 -translate-y-1/2 p-3 bg-indigo-700/50 hover:bg-indigo-700 rounded-full text-white ml-2 transition z-20" aria-label="Previous campaign">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    <button id="carousel-next" class="absolute top-1/2 right-0 -translate-y-1/2 p-3 bg-indigo-700/50 hover:bg-indigo-700 rounded-full text-white mr-2 transition z-20" aria-label="Next campaign">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                    <div id="carousel-status" class="sr-only" aria-live="polite"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Trust & Security -->
+        <section id="trust" class="py-20 sm:py-28">
+            <div class="container">
+                <h2 class="text-4xl font-extrabold text-center mb-12 text-indigo-400">Built on Security and Trust</h2>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div class="p-6 glass-card">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-amber-400 mx-auto mb-4"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/><path d="M12 6v6l4 2"/></svg>
+                        <h3 class="text-xl font-semibold mb-2">Verified Profiles</h3>
+                        <p class="text-gray-400 text-sm">Every profile is manually vetted for authenticity and reach.</p>
+                    </div>
+                    <div class="p-6 glass-card">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-amber-400 mx-auto mb-4"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h16v12zm-2-6h-4v4h4v-4zm-4-4h4v4h-4v-4z"/></svg>
+                        <h3 class="text-xl font-semibold mb-2">Secure Payments</h3>
+                        <p class="text-gray-400 text-sm">All transactions processed securely via encrypted channels.</p>
+                    </div>
+                    <div class="p-6 glass-card">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-amber-400 mx-auto mb-4"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M12 5V2"/><path d="M7 2v3"/><path d="M17 2v3"/><path d="M7 15h10"/></svg>
+                        <h3 class="text-xl font-semibold mb-2">Escrow Protection</h3>
+                        <p class="text-gray-400 text-sm">Funds are held until campaign deliverables are approved.</p>
+                    </div>
+                    <div class="p-6 glass-card">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-amber-400 mx-auto mb-4"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="8" x2="16" y1="13" y2="13"/><line x1="8" x2="16" y1="17" y2="17"/><line x1="8" x2="12" y1="9" y2="9"/></svg>
+                        <h3 class="text-xl font-semibold mb-2">Ironclad Contracts</h3>
+                        <p class="text-gray-400 text-sm">Clear, legally reviewed contracts for every single booking.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Event Booking Form (Modal Triggered) -->
+        <!-- The form itself is a modal (see #event-booking-modal) -->
+
+        <!-- 7. Collab Calculator (JS widget) -->
+        <section id="calculator" class="py-20 sm:py-28 bg-indigo-900/10">
+            <div class="container max-w-3xl">
+                <h2 class="text-4xl font-extrabold text-center mb-4">Collab ROI Calculator</h2>
+                <p class="text-xl text-gray-400 text-center max-w-2xl mx-auto mb-8">Estimate your potential reach and return on investment instantly, visualized below.</p>
+
+                <div class="glass-card p-8">
+                    <form id="calculator-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="calc-budget" class="block text-sm font-medium text-gray-300 mb-2">Total Campaign Budget ($)</label>
+                                <input type="number" id="calc-budget" min="1000" value="10000" class="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white" required>
+                            </div>
+                            <div>
+                                <label for="calc-type" class="block text-sm font-medium text-gray-300 mb-2">Campaign Type</label>
+                                <select id="calc-type" class="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white appearance-none cursor-pointer">
+                                    <option value="1.0">Brand Awareness (Low Multiplier)</option>
+                                    <option value="1.5">Product Launch (Medium Multiplier)</option>
+                                    <option value="2.0">Conversion Focus (High Multiplier)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- ROI Visualization Canvas -->
+                        <div class="pt-4 pb-6 border-t border-white/10">
+                            <canvas id="roiCanvas" class="w-full h-48 rounded-lg bg-indigo-900/10"></canvas>
+                            <p class="text-xs text-gray-400 text-center mt-2">Graph shows projected reach (Y-axis) vs. budget (X-axis) based on campaign type.</p>
+                        </div>
+
+                        <!-- Output -->
+                        <div class="pt-4 border-t border-white/10">
+                            <h3 class="text-2xl font-semibold mb-4 text-center">Estimated Results</h3>
+                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-lg">
+                                <span class="text-lg text-gray-300">Estimated Reach:</span>
+                                <span id="calc-reach" class="text-2xl font-bold text-amber-400">0</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-lg mt-3">
+                                <span class="text-lg text-gray-300">Estimated ROI:</span>
+                                <span id="calc-roi" class="text-2xl font-bold text-indigo-400">0x</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Testimonials (Carousel) -->
+        <section id="testimonials" class="py-20 sm:py-28">
+            <div class="container">
+                <h2 class="text-4xl font-extrabold text-center mb-12">Hear It From Our Partners</h2>
+                
+                <div class="relative max-w-3xl mx-auto">
+                    <div id="testimonial-carousel" class="carousel-track h-[300px]">
+                        <!-- Testimonial Items injected by JS -->
+                    </div>
+                    <!-- Navigation Buttons -->
+                    <div class="flex justify-center space-x-4 mt-6">
+                        <button id="testi-prev" class="p-3 bg-indigo-700/50 hover:bg-indigo-700 rounded-full text-white transition" aria-label="Previous testimonial">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="m15 18-6-6 6-6"/></svg>
+                        </button>
+                        <button id="testi-next" class="p-3 bg-indigo-700/50 hover:bg-indigo-700 rounded-full text-white transition" aria-label="Next testimonial">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                    <div id="testimonial-status" class="sr-only" aria-live="polite"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. Stats Section (Existing Simple Stats) -->
+        <section id="stats" class="py-20 sm:py-28 bg-indigo-900/10">
+            <div class="container">
+                <div id="stats-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+                    <!-- Stats injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. Process Section -->
+        <section id="process" class="py-20 sm:py-28">
+            <div class="container">
+                <h2 class="text-4xl font-extrabold text-center mb-16">Our Simple Partnership Process</h2>
+                
+                <div id="process-steps" class="flex flex-col md:flex-row justify-center space-y-8 md:space-y-0 md:space-x-12">
+                    <!-- Steps injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. Impact Dashboard -->
+        <section id="impact-dashboard" class="py-20 sm:py-28 bg-indigo-900/10" aria-labelledby="impact-dashboard-title">
+            <div class="container">
+                <div class="flex justify-between items-end mb-12 flex-wrap gap-4">
+                    <div>
+                        <h2 id="impact-dashboard-title" class="text-4xl font-extrabold text-white">Impact Dashboard</h2>
+                        <p class="text-xl text-gray-400 mt-2">Proof of scale, outcomes, and trust across our network.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label for="baseline-chooser" class="text-sm text-gray-300">Compare vs:</label>
+                        <select id="baseline-chooser" onchange="handleBaselineChange()" class="glass-card bg-white/5 p-2 rounded-lg text-white text-sm appearance-none cursor-pointer">
+                            <option value="2019">Baseline 2019</option>
+                            <option value="2021">Baseline 2021</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="impact-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Metric Cards injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 12. NEW SECTION: Analytics & Projections Dashboard -->
+        <section id="analytics-dashboard" class="py-20 sm:py-28" aria-labelledby="analytics-dashboard-title">
+            <div class="container">
+                <h2 id="analytics-dashboard-title" class="text-4xl font-extrabold text-center mb-4 text-indigo-400">Analytics & Projections Dashboard</h2>
+                <p class="text-xl text-gray-400 text-center max-w-2xl mx-auto mb-12">Actionable insights, growth forecasts, and performance breakdowns.</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8" id="analytics-grid">
+                    <!-- Charts will be dynamically injected here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 13. Works & Portfolio -->
+        <section id="portfolio" class="py-20 sm:py-28 bg-indigo-900/20">
+            <div class="container">
+                <h2 class="text-4xl font-extrabold text-center mb-4">Works & Portfolio</h2>
+                <p class="text-xl text-gray-400 text-center max-w-2xl mx-auto mb-12">See our influencers’ past collaborations, campaigns, and creative work.</p>
+
+                <!-- Portfolio View Tabs -->
+                <div class="flex justify-center space-x-4 mb-8">
+                    <button id="tab-grid" onclick="togglePortfolioView('grid')" class="ripple-button px-6 py-2 rounded-full text-sm font-semibold transition border-2 border-amber-500 bg-amber-500 text-black shadow-lg" aria-pressed="true">Grid View</button>
+                    <button id="tab-dashboard" onclick="togglePortfolioView('dashboard')" class="ripple-button px-6 py-2 rounded-full text-sm font-semibold transition border-2 border-indigo-500 bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/40" aria-pressed="false">Dashboard View</button>
+                </div>
+                
+                <!-- Filters & Category Chips (visible in Grid View only) -->
+                <div id="portfolio-filters-container" class="transition-opacity duration-300">
+                    <!-- Category Carousel -->
+                    <div class="mb-8 overflow-x-auto whitespace-nowrap py-2">
+                        <div id="category-chips" class="inline-flex space-x-3 pb-2">
+                            <!-- Chips injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Filter Bar & Search -->
+                    <div class="glass-card p-4 mb-10 grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <input type="text" id="search-box" oninput="filterWorks()" placeholder="Search by name, brand, or hashtag..." class="md:col-span-2 p-2 rounded bg-white/5 border border-white/10 text-white placeholder-gray-500">
+                        
+                        <select id="filter-platform" onchange="filterWorks()" class="p-2 rounded bg-white/5 border border-white/10 text-white appearance-none cursor-pointer">
+                            <option value="">Platform</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="YouTube">YouTube</option>
+                            <option value="TikTok">TikTok</option>
+                            <option value="Twitch">Twitch</option>
+                        </select>
+                        <select id="filter-type" onchange="filterWorks()" class="p-2 rounded bg-white/5 border border-white/10 text-white appearance-none cursor-pointer">
+                            <option value="">Content Type</option>
+                            <option value="Ad">Ad</option>
+                            <option value="Post">Post</option>
+                            <option value="Video">Video</option>
+                            <option value="Stream">Stream</option>
+                        </select>
+                        <select id="filter-budget" onchange="filterWorks()" class="p-2 rounded bg-white/5 border border-white/10 text-white appearance-none cursor-pointer">
+                            <option value="">Budget Band</option>
+                            <option value="A">Band A ($50k+)</option>
+                            <option value="B">Band B ($10k-$50k)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Works Content Area (Switchable) -->
+                <div id="portfolio-content-area" class="min-h-[500px]">
+                    <!-- Grid View -->
+                    <div id="portfolio-grid-view">
+                        <div id="works-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <!-- Work cards injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Dashboard View (Initially hidden) -->
+                    <div id="portfolio-dashboard-view" class="hidden">
+                        <div id="portfolio-dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <!-- Dashboard metrics injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- END NEW SECTION -->
+
+        <!-- 14. Final CTA -->
+        <section id="final-cta" class="py-24 bg-indigo-600/20 text-center">
+            <div class="container">
+                <h2 class="text-4xl sm:text-5xl font-extrabold mb-8 text-white">Ready to Elevate Your Brand?</h2>
+                <button onclick="openBookingModal()" class="ripple-button bg-amber-500 hover:bg-amber-600 text-black text-lg font-semibold px-10 py-4 rounded-full shadow-2xl shadow-amber-500/40">
+                    Launch Your Campaign
+                </button>
+            </div>
+        </section>
+    </main>
+    
+    <!-- 15. Footer -->
+    <footer class="bg-indigo-950 border-t border-indigo-900">
+        <div class="container py-12">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <!-- Links injected by JS -->
+                <div id="footer-nav-links" class="col-span-2 md:col-span-1"></div>
+                <div class="text-sm space-y-2">
+                    <h3 class="font-bold text-white mb-2">Legal</h3>
+                    <a href="#" class="block text-gray-400 hover:text-amber-400 transition">Privacy Policy</a>
+                    <a href="#" class="block text-gray-400 hover:text-amber-400 transition">Terms of Service</a>
+                </div>
+                <div class="text-sm space-y-2">
+                    <h3 class="font-bold text-white mb-2">Resources</h3>
+                    <a href="#" class="block text-gray-400 hover:text-amber-400 transition">Case Studies</a>
+                    <a href="#" class="block text-gray-400 hover:text-amber-400 transition">Talent Guide</a>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-between items-center pt-8 border-t border-white/10">
+                <p class="text-sm text-gray-500 order-2 sm:order-1 mt-4 sm:mt-0">&copy; 2024 StarLink Studio. All rights reserved.</p>
+                <div id="socials-links" class="flex space-x-4 order-1 sm:order-2">
+                    <!-- Socials injected by JS -->
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- LIGHTBOX MODAL (Interactivity) -->
+    <div id="lightbox-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/90 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="lightbox-modal-title" onclick="closeLightbox()">
+        <div id="lightbox-modal-content" class="glass-card !bg-indigo-950/95 w-full max-w-5xl max-h-[90vh] overflow-y-auto p-6 relative" tabindex="-1" onclick="event.stopPropagation()">
+            <button onclick="closeLightbox()" class="absolute top-4 right-4 text-gray-400 hover:text-amber-400 p-2 rounded-full z-20" aria-label="Close lightbox">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <div id="lightbox-content" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- COMPARE TRAY (Interactivity) -->
+    <div id="compare-tray" class="fixed bottom-0 left-0 right-0 z-40 bg-indigo-900/90 backdrop-blur-lg border-t border-amber-500/50 p-4 shadow-2xl hidden" role="region" aria-live="polite">
+        <div class="container flex justify-between items-center text-sm">
+            <div id="compare-list" class="flex space-x-6 overflow-x-auto">
+                <p class="text-gray-400 font-semibold flex-shrink-0">Comparison List (Max 2):</p>
+                <!-- Compare cards injected by JS -->
+            </div>
+            <div class="flex space-x-3 flex-shrink-0 ml-4">
+                <button onclick="exportCompare()" class="ripple-button bg-amber-500/20 text-amber-300 px-3 py-1 rounded-lg hover:bg-amber-500/40 transition">Export PNG</button>
+                <button onclick="clearCompare()" class="ripple-button bg-red-500/20 text-red-300 px-3 py-1 rounded-lg hover:bg-red-500/40 transition">Clear</button>
+                <button onclick="closeCompareTray()" class="text-gray-400 hover:text-white transition" aria-label="Close comparison tray">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SHORTLIST DRAWER (Interactivity) -->
+    <div id="shortlist-drawer" class="fixed top-0 right-0 w-80 h-full z-[150] glass-card !bg-indigo-950/95 shadow-2xl p-6 hidden" role="complementary" aria-live="polite">
+        <div class="flex justify-between items-center border-b border-white/10 pb-4 mb-4">
+            <h3 class="text-2xl font-bold text-amber-400">My Shortlist</h3>
+            <button onclick="toggleShortlistDrawer()" class="text-gray-400 hover:text-white p-2 rounded-full" aria-label="Close shortlist drawer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+        </div>
+        <div id="shortlist-count" class="text-sm text-gray-400 mb-4"></div>
+        <div id="shortlist-list" class="space-y-4 overflow-y-auto h-[calc(100%-150px)]">
+            <!-- Shortlisted items injected by JS -->
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-white/10">
+            <button onclick="exportShortlist()" class="ripple-button w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 rounded-lg">Export as JSON</button>
+        </div>
+    </div>
+
+    <!-- EVENT BOOKING MODALS, ETC. (Existing) -->
+    
+    <!-- Event Booking Form Modal (used for 'Start Campaign' CTA) -->
+    <div id="event-booking-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title" onclick="closeBookingModal()">
+        <div id="booking-modal-content" class="glass-card !bg-indigo-950/95 w-full max-w-lg p-8 relative" onclick="event.stopPropagation()">
+            <button onclick="closeBookingModal()" class="absolute top-4 right-4 text-gray-400 hover:text-amber-400 p-2 rounded-full" aria-label="Close form">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h2 id="booking-modal-title" class="text-3xl font-bold text-amber-400 mb-2">Start Your Campaign</h2>
+            <p class="text-gray-400 mb-6">Tell us about your event or collaboration needs.</p>
+            <form id="booking-form" class="space-y-4">
+                <div>
+                    <label for="event-type" class="block text-sm font-medium text-gray-300 mb-1">Event/Campaign Type</label>
+                    <select id="event-type" class="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white" required>
+                        <option value="">Select Type</option>
+                        <option value="product-launch">Product Launch</option>
+                        <option value="brand-ambassadorship">Brand Ambassadorship</option>
+                        <option value="speaking-event">Speaking Event</option>
+                        <option value="digital-campaign">Digital Campaign</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="event-date" class="block text-sm font-medium text-gray-300 mb-1">Target Date</label>
+                    <input type="date" id="event-date" class="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white" required>
+                </div>
+                 <div>
+                    <label for="event-budget" class="block text-sm font-medium text-gray-300 mb-1">Approximate Budget ($)</label>
+                    <input type="number" id="event-budget" min="1000" class="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white" required>
+                </div>
+                <div>
+                    <label for="preferred-talent" class="block text-sm font-medium text-gray-300 mb-1">Preferred Talent Niche (Optional)</label>
+                    <input type="text" id="preferred-talent" placeholder="e.g., Tech, Comedy, Sports" class="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white">
+                </div>
+                <button type="submit" id="booking-submit" class="ripple-button w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-5 py-3 rounded-full mt-4">
+                    Submit Request
+                </button>
+                <div id="booking-message" class="mt-3 text-center text-lg hidden"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Talent Profile Modal (Existing) -->
+    <div id="talent-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="talent-modal-title" onclick="closeTalentModal()">
+        <div id="talent-modal-content" class="glass-card !bg-indigo-950/95 w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8 relative" onclick="event.stopPropagation()">
+            <!-- Content injected by JS -->
+        </div>
+    </div>
+
+    <!-- 14. Newsletter Pop-up -->
+    <div id="newsletter-popup" class="fixed bottom-0 right-0 m-6 z-[90] hidden transform transition-transform duration-500 translate-y-full">
+        <div class="glass-card p-6 w-80 shadow-2xl shadow-indigo-500/30">
+            <button onclick="closeNewsletterPopup()" class="absolute top-2 right-2 text-gray-400 hover:text-amber-400" aria-label="Close newsletter popup">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h3 class="text-xl font-bold text-amber-400 mb-2">Join the Inner Circle</h3>
+            <p class="text-sm text-gray-400 mb-4">Get exclusive access to pre-vetted talent lists and early campaign metrics.</p>
+            <form id="newsletter-form">
+                <input type="email" id="news-email" placeholder="Email*" required class="w-full p-2 mb-2 rounded bg-white/5 border border-white/10 text-white text-sm">
+                <input type="text" id="news-company" placeholder="Company (Optional)" class="w-full p-2 mb-4 rounded bg-white/5 border border-white/10 text-white text-sm">
+                <button type="submit" class="ripple-button w-full bg-indigo-500 hover:bg-indigo-600 text-white text-sm py-2 rounded-lg">Subscribe</button>
+            </form>
+            <div id="newsletter-message" class="text-xs text-center mt-2 hidden text-indigo-300"></div>
+        </div>
+    </div>
+    
+    <!-- ========================================================================= -->
+    <!-- --- JAVASCRIPT LOGIC (SIMULATED FILES) --- -->
+    <!-- ========================================================================= -->
+
+    <script>
+        // --- DATA (Content Configuration) ---
+
+        const NAV = ["Talent", "Campaigns", "Trust", "Events", "Impact Dashboard", "Analytics", "Portfolio", "Contact"];
+        
+        const TALENT = [
+            { id: 1, name: "Anya Sharma", niche: "Tech & Futurism", followers: 5.2, engagement: 8.1, img: "https://placehold.co/128x128/6366f1/fff?text=AS" },
+            { id: 2, name: "Ben Carter", niche: "Sports & Fitness", followers: 12.5, engagement: 6.8, img: "https://placehold.co/128x128/f59e0b/000?text=BC" },
+            { id: 3, name: "Chloe Lee", niche: "Luxury Lifestyle", followers: 3.1, engagement: 9.5, img: "https://placehold.co/128x128/8b5cf6/fff?text=CL" },
+            { id: 4, name: "Dev Patel", niche: "Comedy & Film", followers: 8.9, engagement: 5.4, img: "https://placehold.co/128x128/3b82f6/fff?text=DP" },
+            { id: 5, name: "Elena Kim", niche: "Gaming & Esports", followers: 1.1, engagement: 15.2, img: "https://placehold.co/128x128/10b981/fff?text=EK" },
+            { id: 6, name: "Fiona Ray", niche: "Culinary Arts", followers: 6.7, engagement: 7.2, img: "https://placehold.co/128x128/ef4444/fff?text=FR" },
+        ];
+
+        const CAMPAIGNS = [
+            { title: "Quantum Launch", client: "TechCorp", metrics: "Engagement Up 40%", summary: "Used niche tech talent for an authentic B2B product launch.", img: "https://placehold.co/600x400/1e0a3b/fff?text=CASE+1" },
+            { title: "Global Marathon", client: "FitBrand", metrics: "Bookings Up 25%", summary: "Paired sports talent with local events for maximum regional impact.", img: "https://placehold.co/600x400/1e0a3b/fff?text=CASE+2" },
+            { title: "Summer Fashion Drop", client: "HauteCo", metrics: "Reach 60M+", summary: "Exclusive reveal with top lifestyle influencers driving immediate sales.", img: "https://placehold.co/600x400/1e0a3b/fff?text=CASE+3" },
+        ];
+        
+        const TESTIMONIALS = [
+            { quote: "StarLink's secure platform made booking a tier-1 celebrity for our launch event absolutely seamless and transparent. Highly recommended.", name: "Mark K.", role: "CMO, Global Retail Brand" },
+            { quote: "They found us a niche tech personality who understood our product perfectly. Engagement doubled compared to previous campaigns.", name: "Priya L.", role: "Head of Marketing, SaaS" },
+            { quote: "Finally, a platform that protects both the talent and the brand. Escrow and contracts handled beautifully.", name: "Ben A.", role: "Agent, Talent Management" },
+        ];
+
+        const STATS = [
+            { value: "5,100+", label: "Campaigns Completed" },
+            { value: "1,200+", label: "Influencers Onboarded" },
+            { value: "78%", label: "Repeat Booking Rate" },
+            { value: "4.8/5.0", label: "Average Partner Rating" },
+        ];
+
+        const PROCESS = [
+            { step: "Discover", desc: "Audit needs, identify talent targets, define campaign KPIs." },
+            { step: "Negotiate", desc: "Secure transparent terms, finalize contracts, confirm payments." },
+            { step: "Collaborate", desc: "Execute campaign, track performance, release funds on approval." },
+        ];
+        
+        const SOCIALS = [
+            { name: "Twitter", href: "#", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2 3-2.3 2.7-5-.8-8-2-3-5.2-4-7-4 1.2 1.5 2.5 3 2.5 5 0 2.8 2.5 5 5 5-2.2-2.3-1.5-6.4 1.5-8 2.2-1.2 4.2-1.2 5.5-1.2z"/></svg>' },
+            { name: "LinkedIn", href: "#", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>' },
+            { name: "Instagram", href: "#", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>' },
+        ];
+
+        const CATEGORIES = ["All", "Fashion", "Fitness", "Tech", "Beauty", "Gaming", "Travel", "Food", "Education"];
+
+        const WORKS_DATA = [
+            { id: 101, creator: "Chloe Lee", brand: "GlowUp Cosmetics", niche: "Beauty", platform: "Instagram", type: "Post", region: "NA", budget: "B", reach: 2.1, er: 7.5, ctr: 4.2, saves: 12000, media: "https://placehold.co/400x400/8b5cf6/fff?text=Beauty+Ad", description: "Product review post demonstrating a new foundation line. High quality photography.", tags: "#makeup #skincare" },
+            { id: 102, creator: "Ben Carter", brand: "ActiveWear Pro", niche: "Fitness", platform: "YouTube", type: "Video", region: "EU", budget: "A", reach: 5.8, er: 5.5, ctr: 3.1, saves: 8500, media: "https://placehold.co/600x340/f59e0b/000?text=Fitness+Video", description: "Long-form training video integrating sponsored workout gear. High view duration.", tags: "#workout #gym" },
+            { id: 103, creator: "Anya Sharma", brand: "Quantum AI", niche: "Tech", platform: "LinkedIn", type: "Post", region: "NA", budget: "A", reach: 0.9, er: 12.0, ctr: 5.5, saves: 4500, media: "https://placehold.co/400x400/6366f1/fff?text=Tech+Post", description: "Thought leadership article on AI ethics featuring brand's research.", tags: "#AI #innovation" },
+            { id: 104, creator: "Dev Patel", brand: "Adventure Tours", niche: "Travel", platform: "TikTok", type: "Video", region: "AS", budget: "B", reach: 3.5, er: 9.0, ctr: 6.8, saves: 25000, media: "https://placehold.co/400x600/3b82f6/fff?text=Travel+Short", description: "Viral short video showcasing a sponsored luxury resort experience.", tags: "#vacation #luxury" },
+            { id: 105, creator: "Elena Kim", brand: "NextGen PC", niche: "Gaming", platform: "Twitch", type: "Stream", region: "NA", budget: "A", reach: 1.5, er: 18.0, ctr: 7.0, saves: 500, media: "https://placehold.co/600x340/10b981/fff?text=Gaming+Stream", description: "Live stream segment reviewing a new gaming rig's performance.", tags: "#gaming #esports" },
+            { id: 106, creator: "Fiona Ray", brand: "Local Eatery", niche: "Food", platform: "Instagram", type: "Post", region: "EU", budget: "B", reach: 0.5, er: 10.5, ctr: 4.0, saves: 9000, media: "https://placehold.co/400x400/ef4444/fff?text=Food+Review", description: "High-engagement, appetizing photo carousel review of a new restaurant.", tags: "#foodie #restaurant" },
+        ];
+        
+        // --- NEW IMPACT DATA ---
+        const CURRENT_YEAR = 2025; // Data target year
+        
+        const IMPACT_DATA_ALL = {
+            network_size: {
+                title: "Managed network size", unit: "creators", tooltip: "Total verified creators and influencers onboarded to StarLink Studio.", isRate: false,
+                timeline: { 2019: 120, 2020: 320, 2021: 620, 2022: 850, 2023: 1080, 2024: 1205, 2025: 1284 }
+            },
+            avg_engagement: {
+                title: "Average campaign engagement rate", unit: "%", tooltip: "Average post-level engagement rate across campaigns (likes+comments+saves / impressions).", isRate: true,
+                timeline: { 2019: 3.8, 2020: 4.1, 2021: 4.3, 2022: 4.6, 2023: 4.7, 2024: 4.8, 2025: 4.8 }
+            },
+            total_reach: {
+                title: "Total unique reach across campaigns", unit: "M", tooltip: "Summed de-duplicated audience reach across all campaigns per year.", isRate: false,
+                timeline: { 2019: 33.50, 2020: 36.20, '2021': 41.80, 2022: 49.30, 2023: 53.40, 2024: 55.80, 2025: 57.49 }
+            },
+            verified_profiles: {
+                title: "Verified creator profiles", unit: "%", tooltip: "Share of creators verified by ID + social proof.", isRate: true, // Treated as a rate/percentage point delta
+                timeline: { 2019: 80, 2020: 86, '2021': 90, 2022: 93, 2023: 94, 2024: 95, 2025: 95 }
+            },
+            dispute_rate: {
+                title: "Dispute rate", unit: "%", tooltip: "Share of collaborations that raised a formal dispute (Lower is better).", isRate: true, isNegative: true,
+                timeline: { 2019: 3.5, 2020: 3.1, '2021': 2.6, 2022: 2.2, 2023: 2.0, 2024: 1.8, 2025: 1.6 }
+            },
+            on_time_delivery: {
+                title: "On-time deliverables", unit: "%", tooltip: "Share of deliverables submitted by the agreed deadline.", isRate: true, // Treated as a rate/percentage point delta
+                timeline: { 2019: 90, 2020: 92, '2021': 94, 2022: 96, 2023: 97, 2024: 98, 2025: 98 }
+            }
+        };
+
+        // --- NEW ANALYTICS DATA ---
+        const ANALYTICS_DATA = {
+            projection: {
+                influencers: { '2019': 120, '2020': 320, '2021': 620, '2022': 850, '2023': 1080, '2024': 1200, '2025': 1350, '2026': 1500 }, // K count
+                campaigns: { '2019': 5100, '2020': 6500, '2021': 8200, '2022': 9800, '2023': 11500, '2024': 13000, '2025': 15500, '2026': 18000 }, // Actual count
+                targets: { '2025': 1400, '2026': 1700 } // Influencer targets
+            },
+            reach: {
+                '2019': 33.5, '2020': 36.2, '2021': 41.8, '2022': 49.3, '2023': 53.4, '2024': 55.8, '2025': 57.49, '2026': 60
+            },
+            engagement: {
+                Fashion: { '2019': 5.2, '2020': 5.4, '2021': 5.6, '2022': 5.8, '2023': 5.9, '2024': 6.0, '2025': 6.0, '2026': 6.1 },
+                Fitness: { '2019': 4.0, '2020': 4.2, '2021': 4.4, '2022': 4.6, '2023': 4.7, '2024': 4.8, '2025': 4.8, '2026': 4.9 },
+                Tech: { '2019': 3.5, '2020': 3.7, '2021': 3.9, '2022': 4.1, '2023': 4.2, '2024': 4.2, '2025': 4.3, '2026': 4.4 },
+                Beauty: { '2019': 4.8, '2020': 5.0, '2021': 5.2, '2022': 5.4, '2023': 5.5, '2024': 5.5, '2025': 5.6, '2026': 5.6 },
+                Gaming: { '2019': 3.2, '2020': 3.4, '2021': 3.6, '2022': 3.8, '2023': 3.9, '2024': 3.9, '2025': 4.0, '2026': 4.0 }
+            },
+            roi_by_type: {
+                'Product Launch': { value: 35, roi: '5.5x' },
+                'Event Promotions': { value: 20, roi: '3.1x' },
+                'UGC Ads': { value: 25, roi: '4.2x' },
+                'Long-term Partnerships': { value: 20, roi: '6.8x' }
+            },
+            success_rate: {
+                '2019': { ontime: 90, late: 7, disputed: 3 },
+                '2020': { ontime: 92, late: 5, disputed: 3 },
+                '2021': { ontime: 94, late: 4, disputed: 2 },
+                '2022': { ontime: 96, late: 3, disputed: 1 },
+                '2023': { ontime: 97, late: 2, disputed: 1 },
+                '2024': { ontime: 98, late: 1, disputed: 1 },
+                '2025': { ontime: 98, late: 1, disputed: 1 },
+                '2026': { ontime: 98, late: 1, disputed: 1 }
+            },
+            top_categories: {
+                Beauty: 280, Fashion: 240, Tech: 180, Fitness: 150, 'Food & Beverages': 120, Gaming: 90, Travel: 70
+            },
+            revenue: {
+                '2019': 2.1, '2020': 3.8, '2021': 6.2, '2022': 9.5, '2023': 14, '2024': 18, '2025': 24, '2026': 30
+            }
+        };
+
+        // =========================================================================
+        // --- GLOBAL STATE & UTILITIES ---
+        // =========================================================================
+
+        let currentTalent = null; 
+        let currentPortfolioView = 'grid';
+        let activeCategories = ["All"];
+        let compareList = [];
+        let shortlist = [];
+        let currentBaselineYear = '2019'; // Default baseline
+        // New state for Analytics Dashboard filters
+        let currentProjectionFilter = 'both'; // 'influencers', 'campaigns', or 'both'
+        let currentProjectionView = 'all'; // 'actual', 'projected', or 'all'
+        
+        // Element References
+        let talentModal, bookingModal, lightboxModal, newsletterPopup, shortlistDrawer;
+        let compareTray, compareListEl, lightboxContent, impactMetricsGrid;
+        let portfolioGridView, portfolioDashboardView, portfolioFiltersContainer;
+        let tabGridButton, tabDashboardButton;
+        let analyticsGrid; // New reference for analytics grid
+        
+        // New Canvas References
+        let roiCanvas, roiCtx;
+
+
+        const formatFollowers = (num) => {
+            if (num >= 10) return `${num}M`;
+            return `${num}M+`;
+        }
+
+        const scrollToId = (id) => {
+            const normalizedId = id.toLowerCase().replace(/ /g, '-');
+            const element = document.getElementById(normalizedId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                if (typeof window.toggleMobileMenu === 'function') {
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (mobileMenu && mobileMenu.classList.contains('flex')) {
+                        window.toggleMobileMenu();
+                    }
+                }
+            }
+        };
+
+        const carouselTemplate = (campaign, index) => {
+            return `
+                <div class="carousel-item p-4 text-center">
+                    <img src="${campaign.img}" alt="${campaign.title}" class="w-full h-72 object-cover rounded-xl shadow-lg mb-4 mx-auto" />
+                    <h3 class="text-2xl font-bold text-amber-400 mb-2">${campaign.title}</h3>
+                    <p class="text-lg text-gray-300">Client: ${campaign.client}</p>
+                    <p class="text-indigo-300">${campaign.metrics}</p>
+                    <p class="text-sm text-gray-400 mt-2">${campaign.summary}</p>
+                </div>
+            `;
+        };
+
+        const testimonialTemplate = (testimonial, index) => {
+            return `
+                <div class="carousel-item p-4 text-center flex flex-col justify-center items-center">
+                    <blockquote class="text-2xl italic text-white max-w-2xl mb-4">"${testimonial.quote}"</blockquote>
+                    <p class="font-semibold text-amber-400">${testimonial.name}</p>
+                    <p class="text-sm text-indigo-300">${testimonial.role}</p>
+                </div>
+            `;
+        };
+        
+        // =========================================================================
+        // --- ROI CALCULATOR & CANVAS LOGIC ---
+        // =========================================================================
+        
+        const resizeCanvasForROI = () => {
+            if (!roiCanvas) return;
+            const rect = roiCanvas.getBoundingClientRect();
+            // Set internal drawing dimensions to match external CSS size
+            roiCanvas.width = rect.width;
+            roiCanvas.height = rect.height;
+        };
+
+        /**
+         * Renders a simple line graph showing projected reach vs budget.
+         * @param {number} budget The current user input budget.
+         * @param {number} reach The calculated estimated reach.
+         */
+        const renderROICanvas = (budget, reach) => {
+            if (!roiCtx) return;
+
+            resizeCanvasForROI();
+
+            const W = roiCanvas.width;
+            const H = roiCanvas.height;
+            const padding = 20;
+
+            // Clear and set background
+            roiCtx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            roiCtx.fillRect(0, 0, W, H);
+
+            // Scaling factors
+            const MAX_BUDGET = 25000; // Max budget for graph scale
+            const MAX_REACH = 600000;  // Max reach for graph scale (600k)
+
+            // Normalize current values (clamp to max scale for visualization)
+            const normBudget = Math.min(budget, MAX_BUDGET);
+            const normReach = Math.min(reach, MAX_REACH);
+
+            // Calculate coordinates (Y is inverted for canvas)
+            const x = padding + (W - 2 * padding) * (normBudget / MAX_BUDGET);
+            const y = H - padding - (H - 2 * padding) * (normReach / MAX_REACH);
+
+            // --- 1. Draw Grid/Axes ---
+            roiCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            roiCtx.lineWidth = 1;
+            
+            // X-axis (Budget)
+            roiCtx.beginPath();
+            roiCtx.moveTo(padding, H - padding);
+            roiCtx.lineTo(W - padding, H - padding);
+            roiCtx.stroke();
+            
+            // Y-axis (Reach)
+            roiCtx.beginPath();
+            roiCtx.moveTo(padding, H - padding);
+            roiCtx.lineTo(padding, padding);
+            roiCtx.stroke();
+
+            // --- 2. Draw Projected Curve ---
+            // Simplified curve showing reach potential (straight line from origin)
+            roiCtx.beginPath();
+            roiCtx.strokeStyle = '#6366f1'; // Primary Accent (Indigo)
+            roiCtx.lineWidth = 4;
+            roiCtx.lineJoin = 'round';
+            roiCtx.lineCap = 'round';
+            roiCtx.moveTo(padding, H - padding); // Start at (0, 0)
+            roiCtx.lineTo(x, y); // Draw to current calculated point
+            roiCtx.stroke();
+
+            // --- 3. Draw Current Point ---
+            roiCtx.fillStyle = '#f59e0b'; // Secondary Accent (Amber)
+            roiCtx.beginPath();
+            roiCtx.arc(x, y, 6, 0, Math.PI * 2);
+            roiCtx.fill();
+            
+            // Draw a halo for visibility
+            roiCtx.fillStyle = 'rgba(245, 158, 11, 0.3)';
+            roiCtx.beginPath();
+            roiCtx.arc(x, y, 10, 0, Math.PI * 2);
+            roiCtx.fill();
+
+            // --- 4. Labels ---
+            roiCtx.fillStyle = '#e5e7eb'; // Light text
+            roiCtx.font = 'bold 12px Inter, sans-serif';
+
+            // Current Budget Label (X-axis)
+            roiCtx.textAlign = 'center';
+            roiCtx.fillText(`$${(budget / 1000).toFixed(0)}k`, x, H - padding + 15); 
+
+            // Current Reach Label (Y-axis)
+            roiCtx.textAlign = 'right';
+            roiCtx.fillText(`${(reach / 1000).toLocaleString('en-US', {maximumFractionDigits: 0})}k`, padding - 5, y + 4); 
+            
+            // Axis Titles
+            roiCtx.textAlign = 'center';
+            roiCtx.fillText('Reach (Thousands)', padding, 10);
+            roiCtx.textAlign = 'right';
+            roiCtx.fillText('Budget (Dollars)', W, H);
+        };
+
+        const calculateROI = () => {
+            const calcBudget = document.getElementById('calc-budget');
+            const calcType = document.getElementById('calc-type');
+            const calcReach = document.getElementById('calc-reach');
+            const calcROI = document.getElementById('calc-roi');
+
+            if (!calcBudget || !calcType || !calcReach || !calcROI) return;
+
+            const budget = parseFloat(calcBudget.value) || 0;
+            const multiplier = parseFloat(calcType.value) || 1.0;
+            
+            // Core calculation logic: Budget * Multiplier * Base_Reach_Factor (15 impressions per dollar)
+            const estimatedReach = Math.round(budget * multiplier * 15);
+            const estimatedROI = Math.round((estimatedReach / budget) * 100) / 100;
+
+            calcReach.textContent = estimatedReach.toLocaleString();
+            calcROI.textContent = `${estimatedROI.toFixed(1)}x`;
+
+            // NEW: Render the canvas visualization
+            renderROICanvas(budget, estimatedReach);
+        };
+
+        const setupCalculator = () => {
+            const calcForm = document.getElementById('calculator-form');
+            const calcBudget = document.getElementById('calc-budget');
+            const calcType = document.getElementById('calc-type');
+
+             if (calcForm && calcBudget && calcType) {
+                // Attach listeners to trigger recalculation and graph redraw
+                calcBudget.oninput = calculateROI;
+                calcType.onchange = calculateROI;
+                
+                calculateROI(); // Initial calculation and graph draw
+            }
+        };
+
+
+        // =========================================================================
+        // --- DASHBOARD CORE LOGIC (Impact & Analytics) --- (MOVED FOR HIERARCHY)
+        // =========================================================================
+
+        /** Utility function to format numbers with K/M suffixes and commas. */
+        const formatValue = (value, unit) => {
+            if (unit === '%') {
+                return value.toFixed(value % 1 !== 0 ? 1 : 0) + unit;
+            }
+            if (unit === 'M') {
+                return value.toFixed(2).replace(/\.00$/, '') + unit;
+            }
+            if (unit === 'creators') {
+                return value.toLocaleString('en-US');
+            }
+            return value;
+        };
+
+        /** Utility function to animate a number count-up. */
+        const animateNumber = (elementId, finalValue, duration = 800) => {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            
+            if (isReducedMotion) {
+                element.textContent = finalValue;
+                return;
+            }
+
+            const start = performance.now();
+            const startValue = 0;
+            const unit = IMPACT_DATA_ALL[element.dataset.metricId].unit;
+
+            const step = (timestamp) => {
+                const elapsed = timestamp - start;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Use the precise value from the data, which is always the last entry in the timeline
+                const currentValue = startValue + (finalValue - startValue) * progress;
+
+                element.textContent = formatValue(currentValue, unit);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    element.textContent = formatValue(finalValue, unit); // Ensure final value is set
+                }
+            };
+            requestAnimationFrame(step);
+        };
+
+        /** Calculates delta and returns formatted HTML for the delta badge. */
+        const calculateDelta = (data) => {
+            const baselineYear = currentBaselineYear;
+            const endYear = CURRENT_YEAR.toString();
+
+            const startValue = data.timeline[baselineYear];
+            const endValue = data.timeline[endYear];
+
+            if (startValue === undefined || endValue === undefined) return '<span class="text-gray-500">N/A</span>';
+
+            const diff = endValue - startValue;
+            const isPositive = diff > 0;
+            const isFavorable = data.isNegative ? !isPositive : isPositive; // Favorable means drop for dispute rate
+            
+            let percentageChange;
+            let displayValue;
+
+            if (data.isRate) {
+                // Use percentage points (pp) for rates/percentages
+                displayValue = Math.abs(diff).toFixed(diff % 1 === 0 ? 0 : 1) + 'pp';
+                percentageChange = Math.abs((diff / startValue) * 100);
+            } else {
+                // Use percentage change for absolute numbers
+                percentageChange = Math.abs((diff / startValue) * 100);
+                displayValue = percentageChange.toFixed(percentageChange % 1 === 0 ? 0 : 1) + '%';
+            }
+
+            const arrow = diff > 0 ? '↑' : (diff < 0 ? '↓' : '→');
+            const colorClass = isFavorable ? 'bg-emerald-500/20 text-emerald-300' : (diff === 0 ? 'bg-gray-500/20 text-gray-400' : 'bg-rose-500/20 text-rose-300');
+            const deltaLabel = data.isRate ? displayValue : arrow + ' ' + displayValue;
+            const deltaTooltip = data.isRate ? `+${diff.toFixed(1)} percentage points since ${baselineYear}` : `${arrow} ${percentageChange.toFixed(1)}% from ${baselineYear}`;
+
+            return `
+                <span class="text-sm font-semibold px-3 py-1 rounded-full ${colorClass} whitespace-nowrap" 
+                      role="tooltip" aria-describedby="tooltip-${data.id}">
+                    ${deltaLabel}
+                </span>
+                <span id="tooltip-${data.id}" role="tooltip" class="sr-only">${deltaTooltip}</span>
+            `;
+        };
+        
+        /** Renders all metric cards for the Impact Dashboard and starts animations. */
+        const renderImpactDashboard = () => {
+            if (!impactMetricsGrid) return;
+            
+            const metricsHTML = Object.keys(IMPACT_DATA_ALL).map((id, index) => {
+                const data = IMPACT_DATA_ALL[id];
+                const finalValue = data.timeline[CURRENT_YEAR];
+                const valueFormatted = formatValue(finalValue, data.unit);
+                const deltaBadge = calculateDelta({ ...data, id: id });
+                
+                // Determine max value for bars based on data type for 100% scale
+                let maxValue;
+                if (data.isRate) {
+                    maxValue = 100; // Percentages always scale to 100
+                } else if (data.unit === 'M') {
+                    // For reach (millions), max scale is higher than the max data point (e.g., 60M)
+                    maxValue = Math.max(data.timeline[CURRENT_YEAR], 60); 
+                } else {
+                    // For creator count, scale to slightly above max
+                    maxValue = Math.max(data.timeline[CURRENT_YEAR], 1300);
+                }
+
+                const progressBars = Object.entries(data.timeline).map(([year, value]) => {
+                    const widthPercent = (value / maxValue) * 100;
+                    const displayValue = formatValue(value, data.unit);
+                    const barColor = data.isNegative ? 'bg-rose-500' : 'bg-amber-500';
+
+                    return `
+                        <div class="flex items-center space-x-3 text-xs mb-1" aria-label="${year}: ${displayValue}">
+                            <span class="w-10 text-gray-400 font-medium">${year}</span>
+                            <div class="flex-grow h-2 rounded-full bg-white/10 overflow-hidden">
+                                <div id="${id}-bar-${year}" class="progress-bar-fill h-2 rounded-full ${barColor}" style="width: 0%;" data-final-width="${widthPercent}"></div>
+                            </div>
+                            <span class="w-12 text-right font-bold text-white">${displayValue}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="glass-card p-6 flex flex-col justify-between" id="metric-card-${id}">
+                        <div class="mb-4">
+                            <!-- Title & Tooltip -->
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-xl font-bold text-white relative group">
+                                    ${data.title}
+                                    <span class="ml-1 text-indigo-300 cursor-help" tabindex="0" title="${data.tooltip}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline w-4 h-4"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                                    </span>
+                                </h3>
+                                <span class="text-lg text-gray-400">${data.unit}</span>
+                            </div>
+
+                            <!-- Big Number -->
+                            <div class="flex items-end justify-between">
+                                <span id="${id}-value" data-metric-id="${id}" data-final-value="${finalValue}" class="text-5xl font-extrabold text-amber-400 leading-none">0</span>
+                                ${deltaBadge}
+                            </div>
+                        </div>
+
+                        <!-- Progress Bars -->
+                        <div class="border-t border-white/5 pt-4 pb-2">
+                            ${progressBars}
+                        </div>
+
+                        <!-- CTAs -->
+                        <div class="flex space-x-2 pt-3 border-t border-white/5">
+                            <button onclick="scrollToId('portfolio')" class="ripple-button flex-1 bg-indigo-500/20 text-indigo-300 px-3 py-2 rounded-full text-sm hover:bg-indigo-500/40 transition">
+                                See full breakdown
+                            </button>
+                            <div class="flex space-x-1">
+                                <button onclick="downloadData('${id}', 'csv')" class="ripple-button bg-white/5 text-gray-300 p-2 rounded-full text-sm hover:bg-white/10" title="Download CSV">CSV</button>
+                                <button onclick="downloadData('${id}', 'json')" class="ripple-button bg-white/5 text-gray-300 p-2 rounded-full text-sm hover:bg-white/10" title="Download JSON">JSON</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            impactMetricsGrid.innerHTML = metricsHTML;
+            
+            // Start animations after content is rendered
+            Object.keys(IMPACT_DATA_ALL).forEach((id, index) => {
+                const finalValue = IMPACT_DATA_ALL[id].timeline[CURRENT_YEAR];
+                animateNumber(`${id}-value`, finalValue, 800);
+                
+                // Stagger bar animations
+                Object.keys(IMPACT_DATA_ALL[id].timeline).forEach((year, barIndex) => {
+                    const barEl = document.getElementById(`${id}-bar-${year}`);
+                    if (barEl) {
+                        const finalWidth = barEl.dataset.finalWidth;
+                        const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                        
+                        // Use timeout to stagger the animation start + delay for number count to finish
+                        setTimeout(() => {
+                            barEl.style.width = `${finalWidth}%`;
+                            if (isReducedMotion) {
+                                barEl.style.transition = 'none';
+                            }
+                        }, 500 + (barIndex * 50));
+                    }
+                });
+            });
+        };
+        
+        const handleBaselineChange = () => {
+            const selectEl = document.getElementById('baseline-chooser');
+            if (selectEl) {
+                currentBaselineYear = selectEl.value;
+            }
+            renderImpactDashboard();
+        };
+
+        const downloadData = (metricId, format) => {
+            const data = IMPACT_DATA_ALL[metricId] || ANALYTICS_DATA[metricId];
+            if (!data) return;
+
+            let content = '';
+            let filename = `starlink-${metricId}.${format}`;
+            
+            let sourceData = data.timeline || data; // Use timeline for impact, or data object for analytics
+
+            if (format === 'csv') {
+                // Handles both flat (reach) and nested (impact timeline) data
+                const isTimeline = !!data.timeline;
+                const headers = isTimeline ? ['Year', 'Value', 'Unit'] : ['Metric', 'Value'];
+                
+                const rows = Object.entries(sourceData).map(([key, value]) => {
+                    if (isTimeline) {
+                        return [key, value, data.unit].join(',');
+                    } else if (typeof value === 'object' && value !== null && 'value' in value) {
+                        // For ROI data
+                        return [key, value.value, 'ROI Multiplier: ' + value.roi].join(',');
+                    } else {
+                         // For Top Categories data
+                        return [key, value].join(',');
+                    }
+                });
+
+                content = headers.join(',') + '\n' + rows.join('\n');
+                filename = `starlink-${metricId}.csv`;
+            } else if (format === 'json') {
+                const jsonContent = Object.entries(sourceData).map(([key, value]) => {
+                    if (data.timeline) {
+                        return { year: parseInt(key), value: value, unit: data.unit };
+                    } else if (typeof value === 'object' && value !== null) {
+                         return { metric: key, ...value };
+                    } else {
+                         return { metric: key, value: value };
+                    }
+                });
+                
+                content = JSON.stringify(jsonContent, null, 2);
+                filename = `starlink-${metricId}.json`;
+            }
+
+            const blob = new Blob([content], { type: `text/${format === 'csv' ? 'csv' : 'json'}` });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+        
+        /** Helper for chart card structure */
+        const generateCard = (title, unit, chartHtml, metricId) => {
+             return `
+                <div class="glass-card p-6 flex flex-col justify-between h-full min-h-[400px]">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-white">${title}</h3>
+                            <span class="text-lg text-gray-400">${unit !== 'N/A' ? unit : ''}</span>
+                        </div>
+                        <div class="h-64 mb-4">
+                            ${chartHtml}
+                        </div>
+                    </div>
+                    <div class="flex space-x-2 pt-3 border-t border-white/5">
+                        <button onclick="scrollToId('portfolio')" class="ripple-button flex-1 bg-indigo-500/20 text-indigo-300 px-3 py-2 rounded-full text-sm hover:bg-indigo-500/40 transition">
+                            View Deep Dive
+                        </button>
+                        <div class="flex space-x-1">
+                            <button onclick="downloadData('${metricId}', 'csv')" class="ripple-button bg-white/5 text-gray-300 p-2 rounded-full text-sm hover:bg-white/10" title="Download CSV">CSV</button>
+                            <button onclick="downloadData('${metricId}', 'json')" class="ripple-button bg-white/5 text-gray-300 p-2 rounded-full text-sm hover:bg-white/10" title="Download JSON">JSON</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const CHART_COLORS = {
+            indigo: '#6366f1', amber: '#f59e0b', emerald: '#10b981', rose: '#f43f5e', gray: '#9ca3af'
+        };
+
+        const renderAudienceReachChart = () => {
+            const data = ANALYTICS_DATA.reach;
+            const years = Object.keys(data).map(y => parseInt(y));
+            const values = Object.values(data);
+            const actualYearsEnd = 2023;
+            const MAX_VALUE = 65; // Max M reach (slightly above 60M)
+            const W = 400; 
+            const H = 200;
+            const P = 30; // Padding
+            const innerW = W - 2 * P;
+            const innerH = H - 2 * P;
+
+            let points = '';
+            for (let i = 0; i < years.length; i++) {
+                const x = P + (i / (years.length - 1)) * innerW;
+                const y = H - P - (values[i] / MAX_VALUE) * innerH;
+                points += `${x},${y} `;
+            }
+            
+            let areaPath = `M ${P} ${H - P} L ${points} L ${W - P} ${H - P} Z`;
+
+            // Draw Y-axis labels
+            const yLabels = [0, 20, 40, 60].map(v => {
+                const y = H - P - (v / MAX_VALUE) * innerH;
+                return `<text x="${P - 5}" y="${y + 3}" fill="#9CA3AF" font-size="10" text-anchor="end">${v}M</text>`;
+            }).join('');
+
+            // Draw X-axis labels (only start/end/milestones)
+            const xLabels = years.map((year, i) => {
+                const x = P + (i / (years.length - 1)) * innerW;
+                if (i === 0 || i === years.length - 1 || year === actualYearsEnd) {
+                    return `<text x="${x}" y="${H - P + 15}" fill="#9CA3AF" font-size="10" text-anchor="middle">${year}'</text>`;
+                }
+                return '';
+            }).join('');
+            
+            // Draw milestone circles/labels
+            const milestones = [
+                { year: 2022, label: '50M Milestone', value: data['2022'] }
+            ].map(m => {
+                const i = years.indexOf(m.year);
+                if (i === -1) return '';
+                const x = P + (i / (years.length - 1)) * innerW;
+                const y = H - P - (m.value / MAX_VALUE) * innerH;
+                return `
+                    <circle cx="${x}" cy="${y}" r="4" fill="${CHART_COLORS.indigo}" stroke="#0f0b18" stroke-width="2" />
+                    <text x="${x + 5}" y="${y - 8}" fill="${CHART_COLORS.indigo}" font-size="9">${m.label}</text>
+                `;
+            }).join('');
+            
+            const svgContent = `
+                <svg viewBox="0 0 ${W} ${H}" class="w-full h-full" role="img" aria-labelledby="reachTitle reachDesc">
+                    <title id="reachTitle">Audience Reach Over Time</title>
+                    <desc id="reachDesc">Line chart showing millions of people reached from 2019 to 2026. Data points are ${values.join(', ')}</desc>
+                    ${yLabels}
+                    ${xLabels}
+                    <g transform="translate(0, 0)">
+                        <!-- Grid Lines -->
+                        <line x1="${P}" y1="${H - P}" x2="${W - P}" y2="${H - P}" stroke="#374151" stroke-width="1" />
+                        <line x1="${P}" y1="${P}" x2="${P}" y2="${H - P}" stroke="#374151" stroke-width="1" />
+                        <!-- Area -->
+                        <path d="${areaPath}" fill="rgba(99, 102, 241, 0.2)" />
+                        <!-- Line Path -->
+                        <polyline fill="none" stroke="${CHART_COLORS.indigo}" stroke-width="3" points="${points}" />
+                        <!-- Data Points -->
+                        ${years.map((year, i) => {
+                            const x = P + (i / (years.length - 1)) * innerW;
+                            const y = H - P - (values[i] / MAX_VALUE) * innerH;
+                            const isProjected = year >= 2024;
+                            const color = isProjected ? CHART_COLORS.amber : CHART_COLORS.indigo;
+                            const diff = i > 0 ? (values[i] - values[i-1]).toFixed(2) : 0;
+                            return `<circle cx="${x}" cy="${y}" r="3" fill="${color}" />
+                                <title>Year ${year}: ${values[i].toFixed(2)}M Reach (YoY Diff: ${diff}M)</title>`;
+                        }).join('')}
+                        ${milestones}
+                    </g>
+                </svg>
+            `;
+
+            return generateCard('Audience Reach Over Time', 'M', svgContent, 'reach');
+        };
+        
+        const renderROIDonutChart = () => {
+            const data = ANALYTICS_DATA.roi_by_type;
+            const entries = Object.entries(data);
+            const values = entries.map(([, d]) => d.value);
+            const total = values.reduce((sum, v) => sum + v, 0);
+            
+            const W = 400; 
+            const H = 200;
+            const R = 90; // Outer radius
+            const R_INNER = 60; // Inner radius
+            const CX = W / 4; // Shift chart left to make room for legend
+            const CY = H / 2;
+            
+            let startAngle = 0;
+            const colors = [CHART_COLORS.indigo, CHART_COLORS.amber, CHART_COLORS.emerald, CHART_COLORS.rose];
+            let paths = [];
+            let currentPath = 0;
+
+            const getPoint = (angle, radius) => ({
+                x: CX + radius * Math.cos(angle * Math.PI / 180),
+                y: CY + radius * Math.sin(angle * Math.PI / 180)
+            });
+
+            for (const [type, item] of entries) {
+                const value = item.value;
+                const percentage = (value / total) * 100;
+                const angle = (value / total) * 360;
+                const endAngle = startAngle + angle;
+                const color = colors[currentPath % colors.length];
+                const roi = item.roi;
+
+                // SVG Path Generation for the Arc (Donut Segment)
+                const startPointOuter = getPoint(startAngle, R);
+                const endPointOuter = getPoint(endAngle, R);
+                const startPointInner = getPoint(startAngle, R_INNER);
+                const endPointInner = getPoint(endAngle, R_INNER);
+
+                const largeArcFlag = angle > 180 ? 1 : 0;
+
+                const path = `
+                    M ${startPointOuter.x} ${startPointOuter.y}
+                    A ${R} ${R} 0 ${largeArcFlag} 1 ${endPointOuter.x} ${endPointOuter.y}
+                    L ${endPointInner.x} ${endPointInner.y}
+                    A ${R_INNER} ${R_INNER} 0 ${largeArcFlag} 0 ${startPointInner.x} ${startPointInner.y}
+                    Z
+                `;
+
+                paths.push(`
+                    <path d="${path}" fill="${color}">
+                        <title>${type}: ${percentage.toFixed(1)}% (Avg. ROI: ${roi})</title>
+                    </path>
+                `);
+
+                startAngle = endAngle;
+                currentPath++;
+            }
+            
+            const legend = entries.map(([type, item], i) => `
+                <div class="flex items-center text-xs text-gray-300">
+                    <span class="w-3 h-3 rounded-sm mr-2 flex-shrink-0" style="background-color: ${colors[i % colors.length]}"></span>
+                    <span class="truncate">${type}:</span> <span class="font-bold ml-1 text-white">${item.value}%</span>
+                    <span class="text-indigo-300 ml-2">(${item.roi})</span>
+                </div>
+            `).join('');
+
+            const svgContent = `
+                <div class="flex h-full">
+                    <svg viewBox="0 0 ${W} ${H}" class="w-1/2 h-full flex-shrink-0" role="img" aria-labelledby="roiTitle roiDesc">
+                        <title id="roiTitle">Campaign ROI by Type</title>
+                        <desc id="roiDesc">Donut chart showing ROI contribution by campaign type. Total of all segments is ${total}%. Segments: ${entries.map(([t, i]) => `${t}: ${i.value}%`).join(', ')}.</desc>
+                        ${paths.join('')}
+                    </svg>
+                    <div class="w-1/2 pt-4 pl-2 flex flex-col justify-center space-y-2">
+                        ${legend}
+                    </div>
+                </div>
+            `;
+
+            return generateCard('Campaign ROI by Type', '% Share', svgContent, 'roi_by_type');
+        };
+
+        const renderTopBrandCategories = () => {
+            const data = ANALYTICS_DATA.top_categories;
+            const entries = Object.entries(data).sort(([, a], [, b]) => b - a);
+            const MAX_VALUE = entries[0][1];
+            
+            const bars = entries.map(([category, count], i) => {
+                const widthPercent = (count / MAX_VALUE) * 100;
+                const barColor = i < 3 ? CHART_COLORS.amber : CHART_COLORS.indigo; // Highlight top 3
+                return `
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm text-gray-300">
+                            <span class="w-32 truncate">${category}</span>
+                            <span class="font-bold text-white">${count.toLocaleString()}</span>
+                        </div>
+                        <div class="w-full h-3 rounded-full bg-white/10 mt-1" role="progressbar" aria-valuenow="${count}" aria-valuemax="${MAX_VALUE}">
+                            <div class="h-full rounded-full ${barColor} progress-bar-fill" style="width: 0%;" data-final-width="${widthPercent}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Note: The progress bar animation logic is already in renderImpactDashboard and reused below.
+
+            const htmlContent = `<div class="p-4 pt-0">${bars}</div>`;
+            return generateCard('Top Brand Categories', 'Campaigns', htmlContent, 'top_categories');
+        };
+
+        const renderPlaceholderChart = (title, metricId, unit, description) => {
+            const svgContent = `
+                <div class="h-full w-full flex items-center justify-center text-center">
+                    <div class="p-4 border-2 border-indigo-500/50 rounded-lg w-full h-full flex flex-col justify-center bg-indigo-900/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-indigo-400 mx-auto mb-2"><path d="M3 3v18h18"/><path d="M18 17s-1.5-2-5-2-5 2-5 2M7 11s2-2 5-2 5 2 5 2"/></svg>
+                        <p class="text-sm font-semibold text-indigo-300">Advanced Chart Placeholder:</p>
+                        <p class="text-xs text-gray-400">${description}</p>
+                    </div>
+                </div>
+            `;
+            return generateCard(title, unit, svgContent, metricId);
+        }
+        
+        const renderAnalyticsDashboard = () => {
+            const grid = document.getElementById('analytics-grid');
+            if (!grid) return;
+
+            grid.innerHTML = [
+                // 1. Projection Graph (Placeholder for Grouped Bar Chart Logic)
+                renderPlaceholderChart('Influencer & Campaign Projection', 'projection', 'Count', 'Grouped Bar Chart: Actual vs Projected Influencer/Campaign Counts and Targets.'),
+                
+                // 2. Audience Reach Over Time (SVG Line Chart)
+                renderAudienceReachChart(),
+
+                // 3. Engagement Rate Trends by Niche (Placeholder for Multi-Line Chart Logic)
+                renderPlaceholderChart('Engagement Rate Trends by Niche', '%', 'Multi-Line Chart: Engagement rates for top 5 niches 2019-2026.'),
+
+                // 4. Campaign ROI by Type (SVG Donut Chart)
+                renderROIDonutChart(),
+
+                // 5. Collaboration Success Rate (Placeholder for Stacked Bar Chart Logic)
+                renderPlaceholderChart('Collaboration Success Rate', '%', 'Stacked Bar Chart: On-time vs Late vs Disputed Deliverables by Year.'),
+
+                // 6. Projected Revenue Potential (Placeholder for Line + Area Chart)
+                renderPlaceholderChart('Projected Revenue Potential', 'Mil', 'Line & Area Chart: Projected yearly revenue growth ($ millions) 2019-2026.'),
+                
+                // 7. Top Brand Categories (HTML/CSS Bar Chart)
+                renderTopBrandCategories(),
+                
+                // Placeholder to complete the grid (if needed)
+                renderPlaceholderChart('Future Market Share Index', 'market_share', 'Index', 'Radar Chart Placeholder: Tracking brand category dominance in the market.'),
+
+            ].join('');
+
+            // Start CSS bar animations (for Impact Dashboard and Top Brand Categories)
+            document.querySelectorAll('.progress-bar-fill').forEach((bar) => {
+                const finalWidth = bar.dataset.finalWidth;
+                const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (!isReducedMotion) {
+                    // Slight delay to ensure element is visible
+                    setTimeout(() => {
+                        bar.style.width = `${finalWidth}%`;
+                    }, 100);
+                } else {
+                    bar.style.transition = 'none';
+                    bar.style.width = `${finalWidth}%`;
+                }
+            });
+        };
+        
+        // =========================================================================
+        // --- GENERAL UI & RENDER LOGIC (Continued) ---
+        // =========================================================================
+
+        const renderNavigation = () => {
+            const desktopLinks = document.getElementById('desktop-nav-links');
+            const mobileLinks = document.getElementById('mobile-nav-links');
+            const linkClass = "text-gray-300 hover:text-amber-400 transition hover:scale-[1.05] focus:text-amber-400";
+
+            const linksHTML = NAV.map(item => {
+                const id = item.toLowerCase().replace(/ /g, '-');
+                return `<a href="#${id}" onclick="scrollToId('${item}')" class="${linkClass}">${item}</a>`;
+            }).join('');
+
+            desktopLinks.innerHTML = linksHTML;
+            mobileLinks.innerHTML = linksHTML + `
+                <button onclick="openBookingModal()" class="ripple-button w-full mt-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-5 py-3 rounded-full">
+                    Start Campaign
+                </button>
+            `;
+        };
+        
+        // --- CATEGORY CHIPS LOGIC ---
+        const toggleCategory = (category) => {
+            if (category === "All") {
+                activeCategories = ["All"];
+            } else {
+                const index = activeCategories.indexOf(category);
+                if (index > -1) {
+                    activeCategories.splice(index, 1); // Remove category
+                } else {
+                    activeCategories.push(category); // Add category
+                }
+                // Ensure "All" is removed if another is selected, and at least one is selected
+                if (activeCategories.includes("All") && activeCategories.length > 1) {
+                    activeCategories = activeCategories.filter(cat => cat !== "All");
+                } else if (activeCategories.length === 0) {
+                    activeCategories = ["All"];
+                }
+            }
+            renderCategoryChips();
+            filterWorks();
+        };
+
+        const renderCategoryChips = () => {
+            const container = document.getElementById('category-chips');
+            if (!container) return;
+
+            container.innerHTML = CATEGORIES.map(cat => {
+                const isActive = activeCategories.includes(cat);
+                const activeClass = isActive ? 'bg-amber-500 text-black shadow-md shadow-amber-500/30' : 'bg-white/5 text-gray-300 hover:bg-white/10';
+                return `
+                    <button 
+                        class="ripple-button px-4 py-2 rounded-full text-sm font-medium transition duration-200 flex-shrink-0 ${activeClass}" 
+                        onclick="toggleCategory('${cat}')"
+                        aria-pressed="${isActive}"
+                    >
+                        ${cat}
+                    </button>
+                `;
+            }).join('');
+        };
+        
+        const renderSections = () => {
+            // Existing sections...
+            const talentGrid = document.getElementById('talent-grid');
+            if (talentGrid) {
+                talentGrid.innerHTML = TALENT.map(t => `
+                    <div class="glass-card p-4 flex flex-col items-center text-center cursor-pointer hover:border-amber-400/50" onclick="openTalentModal(${t.id})" tabindex="0">
+                        <img src="${t.img}" alt="${t.name}" class="w-24 h-24 rounded-full object-cover mb-3 border-4 border-amber-400/20">
+                        <h3 class="text-xl font-bold text-white">${t.name}</h3>
+                        <p class="text-indigo-300 text-sm">${t.niche}</p>
+                        <div class="mt-3 w-full flex justify-around text-xs">
+                            <span class="bg-indigo-700/50 text-white px-2 py-1 rounded-full">${formatFollowers(t.followers)} Foll.</span>
+                            <span class="bg-amber-700/50 text-white px-2 py-1 rounded-full">${t.engagement}% Eng.</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            // Stats Grid
+            const statsGrid = document.getElementById('stats-grid');
+            if (statsGrid) {
+                statsGrid.innerHTML = STATS.map(s => `
+                    <div class="glass-card p-6 border-indigo-700/50">
+                        <p class="text-4xl font-extrabold text-amber-400 mb-2">${s.value}</p>
+                        <p class="text-lg font-medium text-gray-300">${s.label}</p>
+                    </div>
+                `).join('');
+            }
+            
+            // Process Steps
+            const processSteps = document.getElementById('process-steps');
+            if (processSteps) {
+                processSteps.innerHTML = PROCESS.map((p, i) => `
+                    <div class="flex flex-col items-center max-w-xs text-center">
+                        <div class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-3xl font-bold text-white ring-4 ring-amber-400/50 mb-4">${i + 1}</div>
+                        <h3 class="text-2xl font-bold text-amber-400 mb-2">${p.step}</h3>
+                        <p class="text-gray-400">${p.desc}</p>
+                    </div>
+                `).join('');
+            }
+
+            // Socials
+            const socialsLinks = document.getElementById('socials-links');
+            if (socialsLinks) {
+                socialsLinks.innerHTML = SOCIALS.map(s => `
+                    <a href="${s.href}" target="_blank" class="text-gray-400 hover:text-amber-400 transition" aria-label="${s.name}">${s.icon}</a>
+                `).join('');
+            }
+
+            // Footer Nav Links
+            const footerNav = document.getElementById('footer-nav-links');
+            if (footerNav) {
+                footerNav.innerHTML = `<h3 class="font-bold text-white mb-2">Navigation</h3>` + NAV.map(item => `
+                    <a href="#${item.toLowerCase().replace(/ /g, '-')}" onclick="scrollToId('${item}')" class="block text-sm text-gray-400 hover:text-amber-400 transition">${item}</a>
+                `).join('');
+            }
+            
+            // Dashboard Rendering
+            renderImpactDashboard();
+            renderAnalyticsDashboard();
+
+            // Portfolio Rendering Setup
+            renderCategoryChips();
+            filterWorks(); // Initial render of the portfolio grid
+            updateCompareTray();
+            renderShortlistDrawer();
+            
+            // Initial view setup for Portfolio tabs
+            togglePortfolioView(currentPortfolioView, false);  
+        }; // End renderSections
+
+
+        // =========================================================================
+        // --- PORTFOLIO & FILTERING LOGIC (Unchanged) ---
+        // =========================================================================
+
+        const togglePortfolioView = (viewId, updateURL = true) => {
+            currentPortfolioView = viewId;
+            
+            if (!portfolioGridView || !portfolioDashboardView || !portfolioFiltersContainer) return;
+
+            const isGrid = viewId === 'grid';
+
+            portfolioGridView.classList.toggle('hidden', !isGrid);
+            portfolioDashboardView.classList.toggle('hidden', isGrid);
+            portfolioFiltersContainer.classList.toggle('hidden', !isGrid);
+            
+            if (tabGridButton) {
+                tabGridButton.setAttribute('aria-pressed', isGrid);
+                tabGridButton.className = isGrid 
+                    ? 'ripple-button px-6 py-2 rounded-full text-sm font-semibold transition border-2 border-amber-500 bg-amber-500 text-black shadow-lg' 
+                    : 'ripple-button px-6 py-2 rounded-full text-sm font-semibold transition border-2 border-indigo-500 bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/40';
+            }
+            if (tabDashboardButton) {
+                tabDashboardButton.setAttribute('aria-pressed', !isGrid);
+                tabDashboardButton.className = isGrid 
+                    ? 'ripple-button px-6 py-2 rounded-full text-sm font-semibold transition border-2 border-indigo-500 bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/40'
+                    : 'ripple-button px-6 py-2 rounded-full text-sm font-semibold transition border-2 border-amber-500 bg-amber-500 text-black shadow-lg';
+            }
+            
+            if (viewId === 'dashboard') {
+                renderPortfolioDashboard();
+            } else {
+                filterWorks();
+            }
+        };
+
+        const renderPortfolioDashboard = () => {
+            const dashboardEl = document.getElementById('portfolio-dashboard');
+            if (!dashboardEl) return;
+
+            const filteredWorks = getFilteredWorks();
+            const totalWorks = filteredWorks.length;
+            if (totalWorks === 0) {
+                dashboardEl.innerHTML = `<p class="text-center col-span-3 text-gray-400 pt-16">No works match the current filters to generate a dashboard overview.</p>`;
+                return;
+            }
+
+            const typeCounts = filteredWorks.reduce((acc, work) => {
+                acc[work.type] = (acc[work.type] || 0) + 1;
+                return acc;
+            }, {});
+            const typeTotal = Object.values(typeCounts).reduce((a, b) => a + b, 0);
+            
+            const typeChart = Object.keys(typeCounts).map(type => {
+                const percent = ((typeCounts[type] / typeTotal) * 100).toFixed(0);
+                const color = type === 'Post' ? 'bg-indigo-500' : (type === 'Video' ? 'bg-amber-500' : (type === 'Stream' ? 'bg-rose-500' : 'bg-emerald-500'));
+                return `
+                    <div class="mb-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-300">${type}</span>
+                            <span class="font-bold">${percent}% (${typeCounts[type]})</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-white/10 mt-1">
+                            <div class="h-2 rounded-full ${color}" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            const regionData = filteredWorks.reduce((acc, work) => {
+                acc[work.region] = {
+                    totalReach: (acc[work.region]?.totalReach || 0) + work.reach,
+                    count: (acc[work.region]?.count || 0) + 1
+                };
+                return acc;
+            }, {});
+
+            const regionBars = Object.keys(regionData).map(region => {
+                const avgReach = regionData[region].totalReach / regionData[region].count;
+                const maxReach = Math.max(...Object.values(regionData).map(r => r.totalReach / r.count));
+                const percent = ((avgReach / maxReach) * 100).toFixed(0);
+                return `
+                    <div class="flex justify-between items-center text-sm mb-2">
+                        <span class="text-gray-300">${region}</span>
+                        <span class="font-bold">${avgReach.toFixed(1)}M Avg. Reach</span>
+                    </div>
+                    <div class="w-full h-2 rounded-full bg-white/10 mb-2">
+                        <div class="h-2 rounded-full bg-indigo-300" style="width: ${percent}%"></div>
+                    </div>
+                `;
+            }).join('');
+            
+            const avgER = (filteredWorks.reduce((sum, w) => sum + w.er, 0) / totalWorks).toFixed(1);
+            const totalReach = filteredWorks.reduce((sum, w) => sum + w.reach, 0).toFixed(1);
+            
+            dashboardEl.innerHTML = `
+                <div class="glass-card p-6 col-span-1">
+                    <h3 class="text-2xl font-bold text-amber-400 mb-4">Overall Snapshot</h3>
+                    <div class="space-y-4">
+                        <p class="text-xl">Total Filtered Works: <span class="font-bold text-white">${totalWorks}</span></p>
+                        <p class="text-xl">Average Engagement: <span class="font-bold text-white">${avgER}%</span></p>
+                        <p class="text-xl">Total Reach (Combined): <span class="font-bold text-white">${totalReach}M</span></p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 col-span-1">
+                    <h3 class="text-2xl font-bold text-indigo-400 mb-4">Campaign Type Mix</h3>
+                    ${typeChart}
+                </div>
+                
+                <div class="glass-card p-6 col-span-1">
+                    <h3 class="text-2xl font-bold text-indigo-400 mb-4">Regional Reach Index</h3>
+                    ${regionBars}
+                </div>
+            `;
+        };
+        
+        const getFilteredWorks = () => {
+            const searchBox = document.getElementById('search-box');
+            const platformFilter = document.getElementById('filter-platform');
+            const typeFilter = document.getElementById('filter-type');
+            const budgetFilter = document.getElementById('filter-budget');
+            
+            let filteredWorks = WORKS_DATA;
+            if (!searchBox || !platformFilter || !typeFilter || !budgetFilter) return filteredWorks;
+
+            const searchTerm = searchBox.value.toLowerCase();
+            const platform = platformFilter.value;
+            const type = typeFilter.value;
+            const budget = budgetFilter.value;
+
+            if (!activeCategories.includes("All")) {
+                filteredWorks = filteredWorks.filter(work => activeCategories.includes(work.niche));
+            }
+            
+            if (searchTerm) {
+                filteredWorks = filteredWorks.filter(work => 
+                    work.creator.toLowerCase().includes(searchTerm) ||
+                    work.brand.toLowerCase().includes(searchTerm) ||
+                    work.tags.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (platform) {
+                filteredWorks = filteredWorks.filter(work => work.platform === platform);
+            }
+            if (type) {
+                filteredWorks = filteredWorks.filter(work => work.type === type);
+            }
+            if (budget) {
+                filteredWorks = filteredWorks.filter(work => work.budget === budget);
+            }
+            return filteredWorks;
+        };
+
+        const filterWorks = () => {
+            const grid = document.getElementById('works-grid');
+            if (!grid) return;
+
+            const filteredWorks = getFilteredWorks();
+
+            grid.innerHTML = filteredWorks.map((work, index) => renderWorkCard(work, index)).join('');
+
+            document.querySelectorAll('.work-card').forEach((card, i) => {
+                const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (!isReducedMotion) {
+                    setTimeout(() => {
+                        card.classList.add('in-view');
+                    }, i * 50); 
+                } else {
+                    card.classList.add('in-view');
+                }
+            });
+        };
+
+        const renderWorkCard = (work, index) => {
+            const isShortlisted = shortlist.includes(work.id);
+            const isCompared = compareList.includes(work.id);
+            
+            return `
+                <div id="work-${work.id}" class="work-card glass-card p-4 flex flex-col justify-between" tabindex="0">
+                    <div>
+                        <!-- Thumbnail -->
+                        <div class="relative group mb-4 cursor-pointer hover:scale-[1.01] transition duration-300 rounded-lg overflow-hidden" onclick="openLightbox(${work.id})">
+                            <img src="${work.media}" alt="${work.creator} for ${work.brand} campaign media" class="w-full h-40 object-cover rounded-lg">
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                                <span class="text-white text-sm font-semibold border border-white px-3 py-1 rounded-full">VIEW WORK</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-xl font-bold text-white">${work.brand} Ad</h3>
+                        <p class="text-indigo-300 text-sm mb-2">@${work.creator} - ${work.niche}</p>
+
+                        <!-- Metrics Badges -->
+                        <div class="flex flex-wrap gap-2 text-xs font-medium mb-3">
+                            <span class="bg-indigo-700/50 text-white px-2 py-1 rounded-full">Reach: ${work.reach}M</span>
+                            <span class="bg-amber-700/50 text-white px-2 py-1 rounded-full">ER: ${work.er}%</span>
+                            <span class="bg-gray-700/50 text-white px-2 py-1 rounded-full">Saves: ${work.saves.toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex space-x-2 border-t border-white/5 pt-3">
+                        <button onclick="openLightbox(${work.id})" class="ripple-button flex-1 bg-indigo-500/20 text-indigo-300 px-3 py-2 rounded-full text-sm hover:bg-indigo-500/40 transition">View</button>
+                        <button onclick="toggleCompare(${work.id})" class="ripple-button w-1/4 px-3 py-2 rounded-full text-sm transition ${isCompared ? 'bg-amber-500 text-black' : 'bg-white/5 text-gray-300 hover:bg-white/10'}" aria-pressed="${isCompared}" title="${isCompared ? 'Remove from Compare' : 'Add to Compare'}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                        </button>
+                        <button onclick="toggleShortlist(${work.id})" class="ripple-button w-1/4 px-3 py-2 rounded-full text-sm transition ${isShortlisted ? 'bg-green-500 text-white' : 'bg-white/5 text-gray-300 hover:bg-white/10'}" aria-pressed="${isShortlisted}" title="${isShortlisted ? 'Remove from Shortlist' : 'Add to Shortlist'}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+        };
+        
+        // =========================================================================
+        // --- COMPARE TRAY LOGIC (Unchanged) ---
+        // =========================================================================
+
+        const updateCompareTray = () => {
+            if (!compareTray || !compareListEl) return;
+            
+            if (compareList.length > 0) {
+                compareTray.classList.remove('hidden');
+                compareTray.classList.add('flex');
+            } else {
+                setTimeout(() => {
+                    compareTray.classList.add('hidden');
+                    compareTray.classList.remove('flex');
+                }, 300);
+            }
+
+            const compareItems = compareList.map(id => {
+                const work = WORKS_DATA.find(w => w.id === id);
+                if (!work) return '';
+
+                return `
+                    <div class="flex items-center space-x-3 p-2 rounded-lg bg-indigo-700/40">
+                        <img src="${work.media}" alt="${work.brand} thumbnail" class="w-8 h-8 object-cover rounded-md flex-shrink-0">
+                        <div class="text-xs">
+                            <p class="font-semibold text-white truncate">${work.brand}</p>
+                            <p class="text-amber-300">Reach: ${work.reach}M</p>
+                        </div>
+                        <button onclick="toggleCompare(${work.id})" class="text-red-300 hover:text-red-500" aria-label="Remove ${work.brand}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            compareListEl.innerHTML = `<p class="text-gray-400 font-semibold flex-shrink-0">Comparison List (${compareList.length}/2):</p>` + compareItems;
+            
+            filterWorks(); 
+        };
+
+        const toggleCompare = (workId) => {
+            const index = compareList.indexOf(workId);
+            if (index > -1) {
+                compareList.splice(index, 1);
+            } else if (compareList.length < 2) {
+                compareList.push(workId);
+            } else {
+                compareList.shift();
+                compareList.push(workId);
+            }
+            updateCompareTray();
+        };
+
+        const clearCompare = () => {
+            compareList = [];
+            updateCompareTray();
+        };
+
+        const closeCompareTray = () => {
+             if (!compareTray) return;
+             compareTray.classList.add('hidden');
+        }
+
+        const exportCompare = () => {
+            const data = compareList.map(id => WORKS_DATA.find(w => w.id === id)).filter(w => w);
+            console.log("Exporting Comparison Data (simulated PNG):", data);
+            console.log(`Exporting ${data.length} work(s) as PNG! (Metrics: ${data.map(w => w.metrics).join(', ')})`);
+        };
+        
+        // =========================================================================
+        // --- SHORTLIST DRAWER LOGIC (Unchanged) ---
+        // =========================================================================
+
+        const renderShortlistDrawer = () => {
+            const listEl = document.getElementById('shortlist-list');
+            const countEl = document.getElementById('shortlist-count');
+            
+            if (!countEl || !listEl) return;
+
+            countEl.textContent = `${shortlist.length} item(s) currently shortlisted.`;
+
+            if (shortlist.length === 0) {
+                listEl.innerHTML = `<p class="text-gray-500 text-center pt-8">Your shortlist is empty. Click the bookmark icon on any work card to save it.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = shortlist.map(id => {
+                const work = WORKS_DATA.find(w => w.id === id);
+                if (!work) return '';
+                
+                return `
+                    <div class="glass-card flex items-center p-3">
+                        <img src="${work.media}" alt="${work.brand} thumbnail" class="w-12 h-12 object-cover rounded-md flex-shrink-0">
+                        <div class="ml-3 flex-grow min-w-0">
+                            <p class="text-sm font-semibold truncate">${work.brand} - ${work.creator}</p>
+                            <p class="text-xs text-amber-300">${work.reach}M Reach</p>
+                        </div>
+                        <button onclick="toggleShortlist(${work.id})" class="text-red-400 hover:text-red-600 ml-2 flex-shrink-0" aria-label="Remove ${work.brand} from shortlist">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3zM9 9l6 6m0-6-6 6"/></svg>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            filterWorks();
+        };
+
+        const toggleShortlist = (workId) => {
+            const index = shortlist.indexOf(workId);
+            if (index > -1) {
+                shortlist.splice(index, 1);
+            } else {
+                shortlist.push(workId);
+            }
+            renderShortlistDrawer();
+        };
+        
+        const toggleShortlistDrawer = () => {
+            if (!shortlistDrawer) return;
+
+            const isHidden = shortlistDrawer.classList.contains('hidden');
+            if (isHidden) {
+                shortlistDrawer.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                shortlistDrawer.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        };
+
+        const exportShortlist = () => {
+            const data = shortlist.map(id => WORKS_DATA.find(w => w.id === id)).filter(w => w);
+            console.log("Exporting Shortlist Data (simulated JSON):", JSON.stringify(data, null, 2));
+            console.log(`Exporting ${data.length} item(s) to console as JSON.`);
+        };
+
+
+        // =========================================================================
+        // --- LIGHTBOX/MODAL LOGIC (Unchanged) ---
+        // =========================================================================
+        
+        const openLightbox = (workId) => {
+            const work = WORKS_DATA.find(w => w.id === workId);
+            if (!work || !lightboxModal || !lightboxContent) return;
+            
+            const audienceChart = `
+                <div class="p-4 rounded-lg bg-indigo-900/50">
+                    <h4 class="text-lg font-bold mb-3 text-amber-400">Target Audience Metrics</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-400 font-semibold">Age Breakdown:</p>
+                            <ul class="space-y-1 mt-1 text-white">
+                                <li><span class="text-amber-300">40%</span> (25-34)</li>
+                                <li><span class="text-indigo-300">30%</span> (18-24)</li>
+                                <li><span class="text-gray-400">30%</span> (35+)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 font-semibold">Regional Focus:</p>
+                            <ul class="space-y-1 mt-1 text-white">
+                                <li><span class="text-emerald-300">60%</span> North America</li>
+                                <li><span class="text-indigo-300">30%</span> Europe</li>
+                                <li><span class="text-rose-300">10%</span> Asia</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            lightboxContent.innerHTML = `
+                <!-- Media Viewer -->
+                <div class="lg:col-span-1">
+                    <img src="${work.media}" alt="Campaign media for ${work.brand}" class="w-full h-auto object-cover rounded-xl shadow-2xl mb-4">
+                    <div class="flex space-x-2 justify-center">
+                        <button class="ripple-button bg-white/5 p-2 rounded-full text-white hover:bg-white/10" aria-label="Previous media">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                        </button>
+                        <button class="ripple-button bg-white/5 p-2 rounded-full text-white hover:bg-white/10" aria-label="Next media">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Case Study Details -->
+                <div class="lg:col-span-1 space-y-4">
+                    <h3 id="lightbox-modal-title" class="text-3xl font-extrabold text-amber-400">${work.brand} - ${work.platform} ${work.type}</h3>
+                    <p class="text-lg text-indigo-300">Creator: @${work.creator} (${work.niche})</p>
+                    
+                    <div class="p-4 glass-card">
+                        <h4 class="font-bold text-white mb-2">Campaign Summary</h4>
+                        <p class="text-gray-300 text-sm">${work.description}</p>
+                        <p class="text-gray-400 text-xs mt-2">Tags: ${work.tags}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <p class="text-gray-400">Content Type:</p><p class="font-bold text-white">${work.type} (${work.platform})</p>
+                        <p class="text-gray-400">Budget Band:</p><p class="font-bold text-white">${work.budget}</p>
+                        <p class="text-gray-400">Region:</p><p class="font-bold text-white">${work.region}</p>
+                    </div>
+                    
+                    ${audienceChart}
+
+                    <!-- Lightbox Actions -->
+                    <div class="flex space-x-3 pt-3 border-t border-white/10">
+                        <button onclick="toggleCompare(${work.id})" class="ripple-button flex-1 bg-amber-500/20 text-amber-300 px-3 py-2 rounded-lg text-sm hover:bg-amber-500/40 transition">Add to Compare</button>
+                        <button onclick="toggleShortlist(${work.id}); toggleShortlistDrawer();" class="ripple-button flex-1 bg-emerald-500/20 text-emerald-300 px-3 py-2 rounded-lg text-sm hover:bg-emerald-500/40 transition">Add to Shortlist</button>
+                        <button onclick="navigator.clipboard.writeText('StarLink Studio Work ID: ${work.id}'); console.log('Link copied!');" class="ripple-button bg-indigo-500/20 text-indigo-300 p-2 rounded-lg hover:bg-indigo-500/40" title="Copy Link">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.74 1.74"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            lightboxModal.classList.remove('hidden');
+            lightboxModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            const lightboxModalContent = document.getElementById('lightbox-modal-content');
+            if(lightboxModalContent) lightboxModalContent.focus(); 
+        };
+
+        const closeLightbox = () => {
+            if (!lightboxModal) return;
+            setTimeout(() => {
+                lightboxModal.classList.add('hidden');
+                lightboxModal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }, 50);
+        };
+
+        const openTalentModal = (id) => {
+             if (!talentModal) return;
+             const talent = TALENT.find(t => t.id === id);
+            if (!talent) return;
+            currentTalent = talent;
+            
+            const talentModalContent = document.getElementById('talent-modal-content');
+            if (!talentModalContent) return;
+
+            talentModalContent.innerHTML = `
+                <button onclick="closeTalentModal()" class="absolute top-4 right-4 text-gray-400 hover:text-amber-400 p-2 rounded-full z-10" aria-label="Close profile modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1 text-center">
+                        <img src="${talent.img}" alt="${talent.name}" class="w-32 h-32 lg:w-48 lg:h-48 rounded-full object-cover mx-auto mb-4 border-8 border-indigo-700/50">
+                        <h2 id="talent-modal-title" class="text-4xl font-extrabold text-amber-400">${talent.name}</h2>
+                        <p class="text-indigo-300 text-lg mb-4">${talent.niche}</p>
+                        <button onclick="openBookingModal()" class="ripple-button bg-amber-500 hover:bg-amber-600 text-black font-semibold px-6 py-3 rounded-full w-full">Book This Talent</button>
+                    </div>
+                    <div class="lg:col-span-2 space-y-6">
+                        <h3 class="text-2xl font-bold border-b border-white/10 pb-2">Profile Overview</h3>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <p class="text-gray-400">Followers:</p><p class="font-bold text-white">${formatFollowers(talent.followers)}</p>
+                            <p class="text-gray-400">Engagement Rate:</p><p class="font-bold text-white">${talent.engagement}% (Verified)</p>
+                            <p class="text-gray-400">Primary Audience:</p><p class="font-bold text-white">North America, Ages 25-34</p>
+                            <p class="text-gray-400">Past Campaigns:</p><p class="font-bold text-white">5 (Successfully Completed)</p>
+                        </div>
+                        
+                        <h3 class="text-2xl font-bold border-b border-white/10 pb-2">Bio</h3>
+                        <p class="text-gray-300 text-base">Anya is a leading voice in sustainable technology and AI ethics. Her content focuses on simplifying complex future-tech concepts for a broad consumer audience. She is known for high-quality production and authentic, in-depth reviews.</p>
+                    </div>
+                </div>
+            `;
+            talentModal.classList.remove('hidden');
+            talentModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            talentModalContent.focus();
+        };
+
+        const closeTalentModal = () => {
+             if (!talentModal) return;
+            talentModal.classList.add('hidden');
+            talentModal.classList.remove('flex');
+            document.body.style.overflow = '';
+            currentTalent = null;
+        };
+        
+        const openBookingModal = () => {
+             if (!bookingModal) return;
+            bookingModal.classList.remove('hidden');
+            bookingModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeBookingModal = () => {
+            if (!bookingModal) return;
+            bookingModal.classList.add('hidden');
+            bookingModal.classList.remove('flex');
+            document.body.style.overflow = '';
+            const bookingMessage = document.getElementById('booking-message');
+            const bookingForm = document.getElementById('booking-form');
+            if (bookingMessage) bookingMessage.classList.add('hidden');
+            if (bookingForm) bookingForm.reset();
+        };
+
+        const handleBookingSubmit = (e) => {
+            e.preventDefault();
+            
+            const bookingSubmit = document.getElementById('booking-submit');
+            const bookingMessage = document.getElementById('booking-message');
+            const bookingForm = document.getElementById('booking-form');
+
+            if (!bookingSubmit || !bookingMessage || !bookingForm) return;
+            
+            bookingSubmit.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin w-4 h-4 mr-2 inline-block"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Sending...`;
+            bookingSubmit.disabled = true;
+
+            setTimeout(() => {
+                bookingSubmit.innerHTML = 'Request Submitted!';
+                bookingSubmit.classList.add('bg-green-600', 'hover:bg-green-700');
+                bookingSubmit.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                
+                bookingMessage.innerHTML = 'Success! We will contact you shortly.';
+                bookingMessage.classList.remove('hidden');
+                bookingMessage.classList.add('text-green-400');
+
+                console.log("Booking Form Data:", new FormData(bookingForm));
+                
+                setTimeout(() => {
+                    closeBookingModal();
+                    bookingSubmit.innerHTML = 'Submit Request';
+                    bookingSubmit.disabled = false;
+                    bookingSubmit.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    bookingSubmit.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+                    bookingMessage.classList.add('hidden');
+                }, 2000);
+
+            }, 1000);
+        };
+
+
+        // --- Existing Carousel Logic (setupCarousel, etc.) remain unchanged) ---
+        
+        const setupCarousel = (containerId, data, templateFn, statusId) => {
+            const container = document.getElementById(containerId);
+            const statusEl = document.getElementById(statusId);
+            if (!container) return;
+
+            container.innerHTML = data.map((item, index) => templateFn(item, index)).join('');
+            
+            let currentIndex = 0;
+            const items = container.children;
+            const updateCarousel = (index, userInitiated = true) => {
+                const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (isReducedMotion) {
+                    container.style.transform = `translateX(-${index * 100}%)`;
+                    container.style.transition = 'none';
+                } else {
+                    container.style.transform = `translateX(-${index * 100}%)`;
+                    container.style.transition = 'transform 0.4s ease-in-out';
+                }
+                currentIndex = index;
+                if (statusEl && userInitiated) {
+                    statusEl.textContent = `Showing slide ${index + 1} of ${data.length}.`;
+                }
+            };
+
+            const prev = () => updateCarousel(currentIndex === 0 ? data.length - 1 : currentIndex - 1);
+            const next = () => updateCarousel(currentIndex === data.length - 1 ? 0 : currentIndex + 1);
+
+            const prefix = (containerId === 'campaign-carousel') ? 'carousel' : 'testi';
+
+            const prevButton = document.getElementById(`${prefix}-prev`);
+            const nextButton = document.getElementById(`${prefix}-next`);
+
+            if (prevButton) prevButton.onclick = prev;
+            if (nextButton) nextButton.onclick = next;
+
+            container.parentElement.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') prev();
+                if (e.key === 'ArrowRight') next();
+            });
+
+            let startX = 0;
+            container.parentElement.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+            });
+            container.parentElement.addEventListener('touchend', (e) => {
+                const endX = e.changedTouches[0].clientX;
+                const deltaX = endX - startX;
+                if (deltaX > 50) { prev(); } else if (deltaX < -50) { next(); }
+            });
+
+            updateCarousel(0, false);
+            return { prev, next };
+        };
+        
+        let carouselInterval;
+        const setupTestimonials = () => {
+            const carousel = setupCarousel('testimonial-carousel', TESTIMONIALS, testimonialTemplate, 'testimonial-status');
+
+            const startAutoCycle = () => { carouselInterval = setInterval(carousel.next, 5000); };
+            const stopAutoCycle = () => { clearInterval(carouselInterval); };
+
+            const container = document.getElementById('testimonial-carousel').parentElement;
+            if (container) {
+                container.onmouseenter = stopAutoCycle;
+                container.onmouseleave = startAutoCycle;
+            }
+            
+            startAutoCycle();
+        }
+
+        const closeNewsletterPopup = () => {
+             if (!newsletterPopup) return;
+            newsletterPopup.classList.add('translate-y-full');
+            setTimeout(() => {
+                newsletterPopup.classList.add('hidden');
+            }, 500);
+            sessionStorage.setItem('starlink_newsletter_seen', 'true');
+        };
+
+        const handleNewsletterSubmit = (e) => {
+            e.preventDefault();
+            const newsletterMessage = document.getElementById('newsletter-message');
+            const newsletterForm = document.getElementById('newsletter-form');
+            if (!newsletterForm || !newsletterMessage) return;
+
+            const email = document.getElementById('news-email').value;
+            if (!email) return;
+
+            newsletterMessage.innerHTML = 'Subscribing...';
+            newsletterMessage.classList.remove('hidden');
+            
+            setTimeout(() => {
+                console.log("Newsletter Subscribe:", { email, company: document.getElementById('news-company').value });
+                newsletterMessage.innerHTML = 'Subscribed! Check your inbox.';
+                newsletterMessage.classList.add('text-green-400');
+                newsletterForm.reset();
+                setTimeout(closeNewsletterPopup, 1500);
+            }, 800);
+        };
+        
+        // =========================================================================
+        // --- PRELOADER LOGIC (FIXED) ---
+        // =========================================================================
+
+        const simulateLoading = (preloader, progressBar, progressText) => {
+            let progress = 0;
+            const intervalTime = 200;
+            const totalTime = 3000;
+            const totalSteps = totalTime / intervalTime;
+            const stepIncrement = 100 / totalSteps;
+
+            const interval = setInterval(() => {
+                progress += stepIncrement;
+                if (progress > 100) { progress = 100; }
+
+                if (progressBar) progressBar.style.width = `${progress}%`;
+                if (progressText) progressText.textContent = `${Math.round(progress)}%`;
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    // FIX: Set session storage flag immediately upon completion so next load skips preloader.
+                    sessionStorage.setItem('starlink_seen', '1'); 
+                    if (preloader) preloader.style.opacity = '0';
+                    setTimeout(() => {
+                        if (preloader) preloader.style.display = 'none';
+                    }, 500);
+                }
+            }, intervalTime);
+        };
+
+        // =========================================================================
+        // --- INITIALIZATION ---
+        // =========================================================================
+        
+        const init = () => {
+            
+            // Global Modals/Drawers
+            talentModal = document.getElementById('talent-modal');
+            bookingModal = document.getElementById('event-booking-modal');
+            lightboxModal = document.getElementById('lightbox-modal');
+            shortlistDrawer = document.getElementById('shortlist-drawer');
+            newsletterPopup = document.getElementById('newsletter-popup');
+
+            // Compare/Lightbox related globals
+            compareTray = document.getElementById('compare-tray');
+            compareListEl = document.getElementById('compare-list');
+            lightboxContent = document.getElementById('lightbox-content');
+            
+            // Portfolio Element references
+            portfolioGridView = document.getElementById('portfolio-grid-view');
+            portfolioDashboardView = document.getElementById('portfolio-dashboard-view');
+            portfolioFiltersContainer = document.getElementById('portfolio-filters-container');
+            tabGridButton = document.getElementById('tab-grid');
+            tabDashboardButton = document.getElementById('tab-dashboard');
+            
+            // Dashboard Grids
+            impactMetricsGrid = document.getElementById('impact-metrics-grid');
+            analyticsGrid = document.getElementById('analytics-grid');
+
+            // Canvas elements
+            const roiCanvasEl = document.getElementById('roiCanvas');
+            if (roiCanvasEl) {
+                roiCanvas = roiCanvasEl;
+                roiCtx = roiCanvas.getContext('2d');
+            }
+
+
+            // Preloader Elements
+            const preloader = document.getElementById('preloader');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            
+            // Mobile Menu Elements
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuIcon = document.getElementById('menu-icon');
+            const closeIcon = document.getElementById('close-icon');
+
+            // Define mobile menu toggler (using inner scope elements)
+            const toggleMobileMenu = () => {
+                if (!mobileMenuButton || !mobileMenu || !menuIcon || !closeIcon) return;
+
+                const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+                
+                if (isExpanded) {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('flex');
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                    mobileMenuButton.setAttribute('aria-expanded', 'false');
+                } else {
+                    mobileMenu.classList.remove('hidden');
+                    mobileMenu.classList.add('flex');
+                    menuIcon.classList.add('hidden');
+                    closeIcon.classList.remove('hidden');
+                    mobileMenuButton.setAttribute('aria-expanded', 'true');
+                }
+            };
+
+            if (mobileMenuButton) mobileMenuButton.onclick = toggleMobileMenu;
+            window.toggleMobileMenu = toggleMobileMenu; 
+            
+            renderNavigation();
+            renderSections();
+            setupCalculator();
+            
+            setupCarousel('campaign-carousel', CAMPAIGNS, carouselTemplate, 'carousel-status');
+            setupTestimonials();
+            
+            const newsletterForm = document.getElementById('newsletter-form');
+            if (newsletterForm) newsletterForm.onsubmit = handleNewsletterSubmit;
+
+            const bookingForm = document.getElementById('booking-form');
+            if (bookingForm) bookingForm.onsubmit = handleBookingSubmit; 
+
+            window.addEventListener('resize', calculateROI);
+            
+            window.handleBaselineChange = handleBaselineChange;
+            window.downloadData = downloadData;
+
+            if (preloader) {
+                if (sessionStorage.getItem('starlink_seen')) {
+                    preloader.style.display = 'none';
+                } else {
+                    simulateLoading(preloader, progressBar, progressText);
+                }
+            }
+        };
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (talentModal && talentModal.classList.contains('flex')) closeTalentModal();
+                if (bookingModal && bookingModal.classList.contains('flex')) closeBookingModal();
+                if (lightboxModal && lightboxModal.classList.contains('flex')) closeLightbox();
+                if (shortlistDrawer && !shortlistDrawer.classList.contains('hidden')) toggleShortlistDrawer();
+                if (newsletterPopup && newsletterPopup.classList.contains('flex')) closeNewsletterPopup();
+            }
+        });
+
+        window.addEventListener('scroll', () => {
+            if (sessionStorage.getItem('starlink_newsletter_seen') || !newsletterPopup) return;
+            
+            const scrollThreshold = document.body.scrollHeight * 0.5;
+            if (window.scrollY > scrollThreshold && newsletterPopup.classList.contains('hidden')) {
+                newsletterPopup.classList.remove('hidden');
+                setTimeout(() => {
+                    newsletterPopup.classList.remove('translate-y-full');
+                }, 100);
+            }
+        });
+
+        window.onload = init;
+    </script>
+</body>
+</html>
